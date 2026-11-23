@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Adventskalender">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png?v=2">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Adventure Team Adventskalender</title>
 <meta name="description" content="Der Comic-Adventskalender des Bauseminars der Berufsschule Gunzenhausen: jeden Tag ab dem 1. Dezember ein neues Türchen.">
@@ -238,10 +238,9 @@ header{padding-top:84px}
 .w-sign-l .tilt{transform-origin:40px 84px;animation:tilt 3.5s ease-in-out infinite}
 @keyframes tilt{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
 .wall{margin-top:104px}
-.w-walk{top:-104px;left:2%;width:80px;height:96px;animation:walk 46s linear infinite}
+.w-walk{top:-104px;left:20px;width:80px;height:96px}
 .w-walk svg{width:100%;height:100%;overflow:visible;animation:bob .5s ease-in-out infinite alternate}
 @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
-@keyframes walk{0%{left:2%;transform:scaleX(1)}47%{left:calc(98% - 80px);transform:scaleX(1)}50%{left:calc(98% - 80px);transform:scaleX(-1)}97%{left:2%;transform:scaleX(-1)}100%{left:2%;transform:scaleX(1)}}
 .karre-row{display:flex;justify-content:center;margin-bottom:4px}
 .w-karre{position:static;width:150px;height:100px;animation:roll 4s ease-in-out infinite alternate}
 @keyframes roll{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
@@ -251,14 +250,24 @@ header{padding-top:84px}
   .w-sign-r{right:12px;top:-64px;width:52px;height:65px}
   .wall{margin-top:74px}
   .w-walk{top:-72px;width:52px;height:62px}
-  @keyframes walk{0%{left:2%;transform:scaleX(1)}47%{left:calc(98% - 52px);transform:scaleX(1)}50%{left:calc(98% - 52px);transform:scaleX(-1)}97%{left:2%;transform:scaleX(-1)}100%{left:2%;transform:scaleX(1)}}
 }
 
 /* Mini-Spiel */
 .gamehint{margin:6px 0 0;text-align:center;color:var(--muted);font-size:1.05rem}
 .gamehint b{color:var(--gold);font-weight:normal}
 .w-walk{pointer-events:auto;cursor:crosshair;touch-action:manipulation;-webkit-tap-highlight-color:transparent;z-index:5}
-.w-walk.hit,.w-walk.back{animation-play-state:paused}
+.w-walk.climbing svg{animation:climbwiggle .35s ease-in-out infinite alternate}
+@keyframes climbwiggle{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+.w-walk.jump svg{animation:hop .6s cubic-bezier(.2,.8,.4,1)}
+@keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-70px) rotate(-12deg)}}
+.ladder{position:absolute;z-index:3;width:44px;pointer-events:none;transform-origin:top center;transform:scaleY(0);transition:transform .8s cubic-bezier(.3,.8,.3,1);
+  background:
+    linear-gradient(90deg,transparent 3px,#c9a46a 3px 7px,transparent 7px calc(100% - 7px),#c9a46a calc(100% - 7px) calc(100% - 3px),transparent calc(100% - 3px)),
+    repeating-linear-gradient(180deg,transparent 0 18px,#8d5e2f 18px 25px);
+  filter:drop-shadow(2px 3px 0 rgba(0,0,0,.35))}
+.ladder.on{transform:scaleY(1)}
+.hitpop.miss{color:#bfe3fa}
+.hitpop.level{font-size:1.4rem;color:#fff;text-shadow:2px 2px 0 var(--red),-1px -1px 0 var(--ink);white-space:nowrap}
 .w-walk.hit svg{animation:fall 2.6s cubic-bezier(.3,0,.7,1) forwards}
 .w-walk.back svg{animation:climb .9s ease-out}
 @keyframes fall{0%{transform:translate(0,0) rotate(0)}12%{transform:translate(-10px,-26px) rotate(-40deg)}55%{transform:translate(-26px,150px) rotate(-320deg);opacity:1}70%,100%{transform:translate(-30px,170px) rotate(-360deg);opacity:0}}
@@ -280,8 +289,8 @@ header{padding-top:84px}
   <symbol id="wichtel" viewBox="0 0 60 100">
    <g stroke="#1b1b1b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
     <!-- Arme -->
-    <ellipse cx="13" cy="76" rx="5" ry="9" fill="#ff7a1a" transform="rotate(20 13 76)"/>
-    <ellipse cx="47" cy="76" rx="5" ry="9" fill="#ff7a1a" transform="rotate(-20 47 76)"/>
+    <ellipse cx="13" cy="76" rx="5" ry="9" style="fill:var(--vest,#ff7a1a)" transform="rotate(20 13 76)"/>
+    <ellipse cx="47" cy="76" rx="5" ry="9" style="fill:var(--vest,#ff7a1a)" transform="rotate(-20 47 76)"/>
     <circle cx="10" cy="85" r="3.5" fill="#f2b48c"/>
     <circle cx="50" cy="85" r="3.5" fill="#f2b48c"/>
     <!-- Beine und Stiefel -->
@@ -290,19 +299,19 @@ header{padding-top:84px}
     <ellipse cx="23" cy="96" rx="7" ry="3.5" fill="#2b2b2b"/>
     <ellipse cx="37" cy="96" rx="7" ry="3.5" fill="#2b2b2b"/>
     <!-- Warnweste -->
-    <path d="M17 66 L43 66 L47 90 L13 90 Z" fill="#ff7a1a"/>
+    <path d="M17 66 L43 66 L47 90 L13 90 Z" style="fill:var(--vest,#ff7a1a)"/>
     <path d="M14.5 82 L45.5 82" stroke="#e8eef2" stroke-width="3.5"/>
     <path d="M14.5 82 L45.5 82" stroke="#9aa6b0" stroke-width=".8"/>
     <!-- Bart -->
-    <path d="M12 54 Q9 74 30 84 Q51 74 48 54 Q40 61 30 61 Q20 61 12 54 Z" fill="#fff"/>
+    <path d="M12 54 Q9 74 30 84 Q51 74 48 54 Q40 61 30 61 Q20 61 12 54 Z" style="fill:var(--beard,#fff)"/>
     <path d="M22 66 Q24 74 30 78 M38 66 Q36 74 30 78" fill="none" stroke-width="1" opacity=".35"/>
     <!-- Mütze -->
-    <path d="M31 2 C27 18 15 38 10 52 L50 52 C46 38 37 20 31 2 Z" fill="#c8312a"/>
+    <path d="M31 2 C27 18 15 38 10 52 L50 52 C46 38 37 20 31 2 Z" style="fill:var(--hat,#c8312a)"/>
     <path d="M15.8 38 L44.3 38 L46.2 43 L13.9 43 Z" fill="#e8eef2" stroke-width="1.5"/>
     <!-- Helmkrempe -->
-    <path d="M5 54 Q30 46 55 54 L55 57 Q30 51 5 57 Z" fill="#f4c20d"/>
+    <path d="M5 54 Q30 46 55 54 L55 57 Q30 51 5 57 Z" style="fill:var(--brim,#f4c20d)"/>
     <!-- Nase -->
-    <circle cx="30" cy="57" r="6.5" fill="#f2b48c"/>
+    <circle cx="30" cy="57" r="6.5" style="fill:var(--nose,#f2b48c)"/>
    </g>
    <circle cx="27.5" cy="55" r="1.8" fill="#fff" opacity=".7"/>
   </symbol>
@@ -321,7 +330,7 @@ header{padding-top:84px}
 <div class="lights" aria-hidden="true"><ul id="lights"></ul></div>
 <header>
   <div class="sign">
-    <svg class="wichtel w-sign-l" viewBox="0 0 80 100" aria-hidden="true"><g class="tilt"><use href="#wichtel" x="10" width="60" height="100"/><use href="#wasserwaage" x="0" y="74" width="80" height="14"/></g></svg>
+    <svg style="--hat:#3c6591;--vest:#f4d13d" class="wichtel w-sign-l" viewBox="0 0 80 100" aria-hidden="true"><g class="tilt"><use href="#wichtel" x="10" width="60" height="100"/><use href="#wasserwaage" x="0" y="74" width="80" height="14"/></g></svg>
     <svg class="wichtel w-sign-r" viewBox="0 0 80 100" aria-hidden="true"><use href="#wichtel" width="60" height="100"/><g class="swing"><use href="#hammer" x="46" y="56" width="26" height="28"/></g></svg>
     <div class="board">
       <div class="tape"></div>
@@ -348,12 +357,13 @@ header{padding-top:84px}
   <p class="gamehint">❄ Mini-Spiel: Tipp auf den Wichtel auf der Mauer und wirf ihn mit einem Schneeball runter! · Treffer: <b id="hits">0</b></p>
 </section>
 <main class="wall">
-  <div class="wichtel w-walk" aria-hidden="true"><svg viewBox="0 0 80 100"><use href="#wichtel" x="10" width="60" height="100"/><use href="#brett" x="-12" y="62" width="104" height="14"/></svg></div>
+  <div class="ladder" id="ladder" aria-hidden="true"></div>
+  <div class="wichtel w-walk" aria-hidden="true"><svg viewBox="0 0 80 100"><use href="#wichtel" x="10" width="60" height="100"/><use id="wprop" href="#brett" x="-12" y="62" width="104" height="14"/></svg></div>
   <div class="grid" id="grid"></div>
 </main>
 <div class="ground" aria-hidden="true"></div>
 <section class="story" aria-labelledby="storyTitle">
-  <div class="karre-row" aria-hidden="true"><svg class="wichtel w-karre" viewBox="0 0 150 100"><use href="#wichtel" x="0" width="60" height="100"/><use href="#schubkarre" x="46" y="50" width="100" height="52"/></svg></div>
+  <div class="karre-row" aria-hidden="true"><svg style="--hat:#2f7d4f;--vest:#ff7a1a;--beard:#e6e6e6" class="wichtel w-karre" viewBox="0 0 150 100"><use href="#wichtel" x="0" width="60" height="100"/><use href="#schubkarre" x="46" y="50" width="100" height="52"/></svg></div>
   <h2 id="storyTitle">Die Geschichte bisher</h2>
   <p class="intro">Alle Türchen, die du schon geöffnet hast, zum Durchlesen der Reihe nach.</p>
   <div class="list" id="story"></div>
@@ -543,7 +553,7 @@ header{padding-top:84px}
   function fsize(){ var d = Math.min(window.devicePixelRatio||1, 2); fc.width = innerWidth*d; fc.height = innerHeight*d; fx.setTransform(d,0,0,d,0,0); }
   function rnd(a,b){ return a + Math.random()*(b-a); }
   function throwBall(x0,y0,tx,ty,toScreen,away){
-    var T = away ? .55 : toScreen ? rnd(.55,.8) : rnd(.7,1.25);
+    var T = away ? .42 : toScreen ? rnd(.55,.8) : rnd(.7,1.25);
     var gg = (toScreen||away) ? G*.35 : G;
     balls.push({x:x0,y:y0,vx:(tx-x0)/T,vy:(ty-y0)/T - .5*gg*T,t:0,T:T,r:away?9:toScreen?rnd(5,8):rnd(6,11),screen:toScreen&&!away,away:!!away,g:gg});
     startLoop();
@@ -627,32 +637,129 @@ header{padding-top:84px}
   });
 
   // Mini-Spiel: Wichtel auf der Mauer abwerfen (funktioniert die ganze Adventszeit)
-  var walker = document.querySelector(".w-walk"), hitsEl = document.getElementById("hits");
-  var HKEY = "adventWichtelTreffer", hits = 0, down = false;
+  // Je mehr Treffer, desto schneller läuft er und desto öfter weicht er aus.
+  // Ab und zu lässt er eine Strickleiter herunter und klettert daran hoch.
+  var walker = document.querySelector(".w-walk"), wall = document.querySelector(".wall"),
+      ladder = document.getElementById("ladder"), hitsEl = document.getElementById("hits");
+  var HKEY = "adventWichtelTreffer", hits = 0;
   try { hits = +localStorage.getItem(HKEY) || 0; } catch(e){}
   function showHits(){ hitsEl.textContent = hits; }
   showHits();
+  var W = {x: 20, dir: 1, state: "walk", t: 0, base: -104, y: 0, dodge: 0, dash: 0, ladderH: 300, nextLadder: rnd(12,25), last: 0};
+  var CREW = [
+    {name:"Knut",  hat:"#c8312a", vest:"#ff7a1a", beard:"#ffffff", prop:"brett"},
+    {name:"Sven",  hat:"#2f7d4f", vest:"#f4d13d", beard:"#ffffff", prop:"hammer"},
+    {name:"Lasse", hat:"#3c6591", vest:"#ff7a1a", beard:"#f3e3c3", prop:"wasserwaage"},
+    {name:"Björn", hat:"#8e1f1a", vest:"#b5e61d", beard:"#d9d9d9", prop:"brett"},
+    {name:"Oskar", hat:"#6c3fa0", vest:"#ff7a1a", beard:"#ffffff", prop:"hammer"},
+    {name:"Ole",   hat:"#d9822b", vest:"#f4d13d", beard:"#c9b8a0", prop:"wasserwaage"}
+  ];
+  var PROPS = {brett:[-12,62,104,14], hammer:[48,56,26,28], wasserwaage:[0,74,80,14]};
+  var crewIdx = hits % CREW.length, wprop = document.getElementById("wprop");
+  function setCrew(i){
+    var c = CREW[i]; crewIdx = i;
+    walker.style.setProperty("--hat", c.hat); walker.style.setProperty("--vest", c.vest); walker.style.setProperty("--beard", c.beard);
+    var pr = PROPS[c.prop];
+    wprop.setAttribute("href", "#" + c.prop); wprop.setAttribute("x", pr[0]); wprop.setAttribute("y", pr[1]);
+    wprop.setAttribute("width", pr[2]); wprop.setAttribute("height", pr[3]);
+  }
+  setCrew(crewIdx);
+  function level(){ return Math.min(hits, 25); }
+  function speed(){ return Math.min(150, 42 * (1 + .1*level())) * (W.dash > 0 ? 2.6 : 1); }
+  function dodgeChance(){ return Math.min(.6, .05*level()); }
+  function layoutW(){
+    W.base = innerWidth <= 560 ? -72 : -104;
+    var wr = wall.getBoundingClientRect();
+    W.ladderH = Math.max(110, Math.min(innerWidth <= 560 ? 170 : 220, wr.top + scrollY - 40) );
+  }
+  layoutW(); addEventListener("resize", layoutW);
+  function place(){
+    var flip = (W.state === "walk" || W.state === "wait") ? W.dir : 1;
+    walker.style.left = W.x + "px";
+    walker.style.top = (W.base + W.y) + "px";
+    walker.style.transform = "scaleX(" + flip + ")";
+    walker.style.setProperty("--flip", flip);
+  }
+  function setState(st){ W.state = st; W.t = 0; walker.classList.toggle("climbing", st === "up" || st === "down"); }
+  function wTick(t){
+    var dt = Math.min(.05, (t - (W.last||t))/1000); W.last = t;
+    var maxX = wall.clientWidth - walker.offsetWidth - 6;
+    W.t += dt; if (W.dash > 0) W.dash -= dt; if (W.dodge > 0) W.dodge -= dt;
+    if (W.state === "walk"){
+      W.x += W.dir * speed() * dt;
+      if (W.x > maxX){ W.x = maxX; W.dir = -1; }
+      if (W.x < 6){ W.x = 6; W.dir = 1; }
+      W.nextLadder -= dt;
+      if (W.nextLadder <= 0){
+        W.nextLadder = rnd(18, 35);
+        ladder.style.left = (W.x + walker.offsetWidth/2 - 22) + "px";
+        ladder.style.height = (W.ladderH + 40) + "px";
+        ladder.style.top = (-(W.ladderH) - 10) + "px";
+        ladder.classList.add("on"); setState("wait");
+      }
+    } else if (W.state === "wait"){
+      if (W.t > .9) setState("up");
+    } else if (W.state === "up"){
+      W.y -= (55 + 6*level()) * dt;
+      if (W.y <= -(W.ladderH - 30)){ W.y = -(W.ladderH - 30); setState("top"); }
+    } else if (W.state === "top"){
+      if (W.t > 1.4) setState("down");
+    } else if (W.state === "down"){
+      W.y += (70 + 6*level()) * dt;
+      if (W.y >= 0){ W.y = 0; ladder.classList.remove("on"); setState("walk"); }
+    }
+    if (W.state !== "fallen") place();
+    if (!fightReduce) requestAnimationFrame(wTick);
+  }
+  place();
+  if (!fightReduce) requestAnimationFrame(wTick);
+
+  function maybeDodge(x,y){
+    if (W.state === "fallen" || W.dodge > 0) return;
+    var r = walker.getBoundingClientRect();
+    if (Math.abs(x - (r.left + r.width/2)) > r.width) return;
+    if (Math.random() >= dodgeChance()) return;
+    W.dodge = .7;
+    if (W.state === "walk" && Math.random() < .55){
+      // wegsprinten, oft in die andere Richtung
+      if (Math.random() < .6) W.dir *= -1;
+      W.dash = .6;
+    } else {
+      walker.classList.remove("jump"); void walker.offsetWidth; walker.classList.add("jump");
+      setTimeout(function(){ walker.classList.remove("jump"); }, 650);
+    }
+  }
   walker.addEventListener("pointerdown", function(e){
     e.preventDefault(); e.stopPropagation();
     if (dlg && dlg.open) return;
     userThrow(e.clientX, e.clientY);
   });
-  function checkHit(x,y){
-    if (down) return;
-    var r = walker.getBoundingClientRect(), m = 14;
-    if (x < r.left-m || x > r.right+m || y < r.top-m || y > r.bottom+m) return;
-    down = true; hits++; showHits();
-    try { localStorage.setItem(HKEY, hits); } catch(e){}
-    var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!"];
-    walker.setAttribute("data-say", say[Math.floor(Math.random()*say.length)]);
-    var tm = getComputedStyle(walker).transform, flip = (tm && tm.indexOf("matrix(-") === 0) ? -1 : 1;
-    walker.style.setProperty("--flip", flip);
-    walker.classList.remove("back"); walker.classList.add("hit");
-    var pop = document.createElement("div"); pop.className = "hitpop"; pop.textContent = "Treffer! " + hits;
+  function popText(x,y,txt,cls){
+    var pop = document.createElement("div"); pop.className = "hitpop" + (cls ? " " + cls : ""); pop.textContent = txt;
     pop.style.left = x + "px"; pop.style.top = y + "px"; document.body.appendChild(pop);
     setTimeout(function(){ pop.remove(); }, 1300);
-    setTimeout(function(){ walker.classList.remove("hit"); walker.classList.add("back"); }, 2600);
-    setTimeout(function(){ walker.classList.remove("back"); down = false; }, 3500);
+  }
+  function checkHit(x,y){
+    if (W.state === "fallen") return;
+    var r = walker.getBoundingClientRect(), m = 12;
+    if (x < r.left-m || x > r.right+m || y < r.top-m || y > r.bottom+m) return;
+    if (walker.classList.contains("jump")){ popText(x,y,"Ausgewichen!","miss"); return; }
+    hits++; showHits();
+    try { localStorage.setItem(HKEY, hits); } catch(e){}
+    var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!","Jetzt aber schnell!"];
+    walker.setAttribute("data-say", CREW[crewIdx].name + ": " + say[Math.floor(Math.random()*say.length)]);
+    var fromLadder = W.state === "up" || W.state === "top" || W.state === "down";
+    setState("fallen");
+    walker.classList.remove("back", "jump"); walker.classList.add("hit");
+    popText(x, y, "Treffer! " + hits);
+    if (hits % 5 === 0) setTimeout(function(){ popText(innerWidth/2, innerHeight/2, "Level " + (hits/5 + 1) + ": Der Wichtel wird schneller!", "level"); }, 500);
+    setTimeout(function(){
+      walker.classList.remove("hit"); walker.classList.add("back");
+      setCrew((crewIdx + 1) % CREW.length);
+      if (fromLadder){ ladder.classList.remove("on"); }
+      W.y = 0; setState("walk"); W.nextLadder = rnd(15, 30); place();
+    }, 2600);
+    setTimeout(function(){ walker.classList.remove("back"); }, 3500);
   }
 
   // Lichterkette
