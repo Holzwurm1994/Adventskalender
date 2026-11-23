@@ -4,86 +4,193 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Adventure Team Adventskalender</title>
+<meta name="description" content="Der Comic-Adventskalender des Bauseminars der Berufsschule Gunzenhausen: jeden Tag ab dem 1. Dezember ein neues Türchen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Saira+Stencil+One&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#14301f; --bg2:#1d4630; --paper:#fbf7ee; --ink:#1b1b1b;
-  --door:#b8322a; --door2:#962620; --gold:#e8b84a; --muted:#cfe3d4;
-  --locked:#3a5a46;
+  --night:#0e1a2b; --night2:#1b2d47; --paper:#fbf7ee; --ink:#1b1b1b;
+  --wood:#c08a4f; --wood2:#a8733c; --wood3:#8d5e2f; --woodlock:#6f5b48;
+  --brick:#8e3b2b; --brick2:#7a3224; --mortar:#cdbca4;
+  --hazard:#f4c20d; --gold:#ffd36b; --muted:#c9d6e6; --red:#c0392b; --green:#2e7d4f;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-html{background:var(--bg)}
+html{background:var(--night)}
 body{
-  background:radial-gradient(ellipse at top,var(--bg2),var(--bg) 70%) fixed;
+  background:linear-gradient(180deg,var(--night) 0,var(--night2) 520px,var(--night2) 100%);
   color:var(--paper); font-family:"Patrick Hand","Comic Sans MS",system-ui,sans-serif;
   min-height:100vh; overflow-x:hidden;
 }
-.snow{position:fixed;inset:0;pointer-events:none;z-index:0}
-header{position:relative;z-index:1;text-align:center;padding:28px 16px 8px}
-h1{margin:0;font-size:clamp(2rem,6vw,3.4rem);letter-spacing:.02em;color:var(--paper)}
-h1 span{color:var(--gold)}
-.sub{margin:6px 0 0;font-size:1.25rem;color:var(--muted)}
-.status{margin:10px auto 0;font-size:1.1rem;color:var(--gold);min-height:1.4em}
-main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:16px 16px 48px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
-.door{
-  position:relative;aspect-ratio:1/1;border:none;padding:0;cursor:pointer;
-  background:transparent;perspective:700px;font:inherit;
+.snow{position:fixed;inset:0;pointer-events:none;z-index:3}
+
+/* Lichterkette */
+.lights{position:relative;z-index:2;height:46px;overflow:hidden}
+.lights::before{content:"";position:absolute;left:-5%;right:-5%;top:-30px;height:50px;border-bottom:2px solid #2a2a2a;border-radius:0 0 50% 50%/0 0 100% 100%}
+.lights ul{list-style:none;margin:0;padding:0 8px;display:flex;justify-content:space-between;position:relative;top:8px}
+.lights li{width:12px;height:18px;border-radius:50% 50% 45% 45%;position:relative;animation:glow 2.4s infinite ease-in-out}
+.lights li::before{content:"";position:absolute;top:-5px;left:3px;width:6px;height:6px;background:#333;border-radius:2px}
+.lights li:nth-child(4n+1){background:#ff5a4e;--c:#ff5a4e}
+.lights li:nth-child(4n+2){background:var(--hazard);--c:#f4c20d;animation-delay:.6s}
+.lights li:nth-child(4n+3){background:#58d68d;--c:#58d68d;animation-delay:1.2s}
+.lights li:nth-child(4n+4){background:#5dade2;--c:#5dade2;animation-delay:1.8s}
+.lights li:nth-child(odd){top:6px}
+@keyframes glow{0%,100%{box-shadow:0 0 14px 3px var(--c);opacity:1}50%{box-shadow:0 0 4px 0 var(--c);opacity:.55}}
+
+/* Bauschild */
+header{position:relative;z-index:2;padding:10px 16px 0;display:flex;justify-content:center}
+.sign{position:relative;max-width:720px;width:100%;color:var(--ink)}
+.sign .board{
+  position:relative;background:var(--paper);border:4px solid var(--ink);border-radius:6px;
+  box-shadow:0 10px 30px rgba(0,0,0,.45);overflow:hidden;
 }
+.tape{height:18px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 16px,var(--ink) 16px 32px)}
+.board .inner{padding:14px 22px 16px;text-align:center}
+.school{font-family:"Saira Stencil One",sans-serif;font-size:clamp(.95rem,2.6vw,1.15rem);letter-spacing:.06em;color:#444;text-transform:uppercase}
+h1{margin:2px 0 0;font-family:"Patrick Hand",sans-serif;font-size:clamp(2.4rem,8vw,4rem);line-height:1;letter-spacing:.01em}
+h1 .star{color:var(--red);font-size:.7em;vertical-align:.25em}
+.claim{margin:4px 0 12px;font-size:clamp(1.1rem,3.2vw,1.4rem)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;text-align:left;max-width:520px;margin:0 auto;font-size:clamp(1rem,2.8vw,1.15rem);border-top:2px dashed #bbb;padding-top:10px}
+.facts dt{font-family:"Saira Stencil One",sans-serif;font-size:.85em;color:#666;letter-spacing:.04em;padding-top:.15em}
+.facts dd{margin:0}
+.posts{display:flex;justify-content:space-around;height:36px;margin-top:-2px}
+.posts span{width:16px;background:linear-gradient(90deg,#999,#ddd,#888);border:2px solid var(--ink);border-top:none}
+
+/* Baufortschritt als Zollstock */
+.progress{max-width:720px;margin:14px auto 0;padding:0 16px;position:relative;z-index:2}
+.progress .label{display:flex;justify-content:space-between;font-size:1.15rem;color:var(--muted);margin-bottom:4px;gap:10px}
+.progress .label b{color:var(--gold);font-weight:normal}
+.ruler{height:22px;border:2px solid var(--ink);border-radius:4px;background:#3b4b62;overflow:hidden;position:relative}
+.ruler .fill{height:100%;width:0;background:
+  repeating-linear-gradient(90deg,transparent 0 calc(100%/24 - 2px),rgba(0,0,0,.55) calc(100%/24 - 2px) calc(100%/24)),
+  #f2c94c;transition:width 1s ease}
+.ruler .fill{background-size:calc(100%*24/var(--n,1)) 100%, auto}
+.ruler::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(100%/48 - 1px),rgba(255,255,255,.18) calc(100%/48 - 1px) calc(100%/48));pointer-events:none}
+.status{margin:10px 0 0;font-size:1.2rem;color:var(--gold);min-height:1.4em;text-align:center}
+
+/* Ziegelwand */
+.wall{
+  position:relative;z-index:2;max-width:1040px;margin:18px auto 0;padding:22px;
+  background-color:var(--brick);
+  background-image:
+    linear-gradient(var(--mortar) 3px,transparent 3px),
+    linear-gradient(90deg,var(--mortar) 3px,transparent 3px),
+    linear-gradient(90deg,var(--mortar) 3px,transparent 3px),
+    linear-gradient(180deg,rgba(0,0,0,.0),rgba(0,0,0,.25));
+  background-size:100% 36px,72px 36px,72px 36px,100% 100%;
+  background-position:0 0,0 0,36px 18px,0 0;
+  border-top:10px solid #9aa3ad; border-radius:4px 4px 0 0;
+  box-shadow:0 -2px 0 #6c757d inset;
+}
+/* versetzte Fugen: zweite Fugenreihe nur in jeder zweiten Steinreihe */
+.wall{background-image:
+    linear-gradient(var(--mortar) 3px,transparent 3px),
+    repeating-linear-gradient(180deg,transparent 0 18px,var(--brick) 18px 36px),
+    linear-gradient(90deg,var(--mortar) 3px,transparent 3px),
+    linear-gradient(90deg,var(--mortar) 3px,transparent 3px);
+  background-size:100% 18px,100% 36px,72px 36px,72px 36px;
+  background-position:0 0,0 0,0 0,36px 18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:18px}
+
+/* Holztürchen */
+.door{position:relative;aspect-ratio:1/1;border:none;padding:0;cursor:pointer;background:transparent;perspective:800px;font:inherit}
 .door .back{
-  position:absolute;inset:0;border-radius:10px;background:var(--paper);
-  background-size:cover;background-position:center;border:3px solid var(--ink);
+  position:absolute;inset:0;border-radius:6px;background:var(--paper);
+  background-size:cover;background-position:center;border:4px solid #4a3220;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.2);
 }
 .door .front{
-  position:absolute;inset:0;border-radius:10px;border:3px solid var(--ink);
-  background:linear-gradient(145deg,var(--door),var(--door2));
+  position:absolute;inset:0;border-radius:6px;border:3px solid #4a3220;
+  background:
+    radial-gradient(circle at 12px 12px,#555 0 3px,#bbb 3px 4px,transparent 5px),
+    radial-gradient(circle at calc(100% - 12px) 12px,#555 0 3px,#bbb 3px 4px,transparent 5px),
+    radial-gradient(circle at 12px calc(100% - 12px),#555 0 3px,#bbb 3px 4px,transparent 5px),
+    radial-gradient(circle at calc(100% - 12px) calc(100% - 12px),#555 0 3px,#bbb 3px 4px,transparent 5px),
+    repeating-linear-gradient(180deg,transparent 0 calc(33.33% - 2px),rgba(60,35,15,.55) calc(33.33% - 2px) 33.33%),
+    repeating-linear-gradient(176deg,rgba(255,255,255,.07) 0 3px,transparent 3px 9px,rgba(0,0,0,.06) 9px 11px,transparent 11px 17px),
+    linear-gradient(135deg,var(--wood),var(--wood2) 60%,var(--wood3));
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  transform-origin:left center;transition:transform .7s cubic-bezier(.3,.7,.3,1);
-  box-shadow:inset 0 0 0 6px rgba(255,255,255,.08);color:var(--paper);
+  transform-origin:left center;transition:transform .8s cubic-bezier(.3,.7,.3,1);
+  box-shadow:4px 6px 0 rgba(0,0,0,.35);color:#2b1a0d;
 }
-.door .num{font-size:3rem;line-height:1;text-shadow:2px 2px 0 rgba(0,0,0,.35)}
-.door .hint{font-size:1rem;opacity:.9;margin-top:4px}
+.door .num{font-family:"Saira Stencil One",sans-serif;font-size:3.2rem;line-height:1;color:#2b1a0d;text-shadow:0 1px 0 rgba(255,255,255,.25)}
+.door .hint{font-size:1.05rem;margin-top:2px;background:rgba(251,247,238,.85);padding:0 8px;border-radius:4px;color:var(--ink)}
+.door .hint:empty{display:none}
 .door.locked{cursor:not-allowed}
-.door.locked .front{background:linear-gradient(145deg,var(--locked),#2a4535);color:#a9c4b2}
-.door.today .front{box-shadow:0 0 0 4px var(--gold),0 0 24px var(--gold)}
-.door.opened .front{transform:rotateY(-100deg);opacity:0;pointer-events:none;transition:transform .7s cubic-bezier(.3,.7,.3,1),opacity .25s .55s}
-.door:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:12px}
+.door.locked .front{filter:saturate(.35) brightness(.72)}
+.door.locked .hint{background:transparent;font-size:1.2rem}
+.door.today .front{outline:5px solid transparent;box-shadow:0 0 0 5px var(--hazard),0 0 26px 6px rgba(244,194,13,.7),4px 6px 0 rgba(0,0,0,.35);animation:nudge 2.8s infinite}
+@keyframes nudge{0%,88%,100%{transform:rotate(0)}91%{transform:rotate(-2deg)}94%{transform:rotate(2deg)}97%{transform:rotate(-1deg)}}
+.door.opened .front{transform:rotateY(-100deg);opacity:0;pointer-events:none;animation:none;transition:transform .8s cubic-bezier(.3,.7,.3,1),opacity .25s .6s}
+.door:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:8px}
 .door.shake{animation:shake .4s}
 @keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
-footer{position:relative;z-index:1;text-align:center;color:var(--muted);padding:0 16px 32px;font-size:1rem}
 
-dialog{
-  border:none;padding:0;background:transparent;max-width:min(1100px,96vw);width:100%;
-}
-dialog::backdrop{background:rgba(5,15,10,.85)}
-.viewer{background:var(--paper);color:var(--ink);border-radius:12px;border:4px solid var(--ink);overflow:hidden}
-.viewer img{display:block;width:100%;height:auto;max-height:80vh;object-fit:contain;background:#fff}
-.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-top:3px solid var(--ink)}
-.bar button{
-  font:inherit;font-size:1.15rem;border:2px solid var(--ink);background:#fff;color:var(--ink);
-  border-radius:8px;padding:6px 14px;cursor:pointer;
-}
-.bar button:disabled{opacity:.35;cursor:default}
-.bar .title{font-size:1.3rem}
-@media (max-width:520px){
-  .grid{grid-template-columns:repeat(3,1fr);gap:10px}
-  .door .num{font-size:2.2rem}
+/* Boden + Fußzeile */
+.ground{position:relative;z-index:2;max-width:1040px;margin:0 auto;height:16px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 14px,var(--ink) 14px 28px);border:2px solid var(--ink);border-top:none}
+footer{position:relative;z-index:2;text-align:center;color:var(--muted);padding:22px 16px 36px;font-size:1.1rem}
+footer strong{color:var(--paper);font-weight:normal}
+footer .trades{font-family:"Saira Stencil One",sans-serif;letter-spacing:.08em;font-size:.9rem;color:#8fa3bd;margin-top:6px}
+
+/* Comic-Ansicht */
+dialog{border:none;padding:0;background:transparent;max-width:min(1100px,96vw);width:100%}
+dialog::backdrop{background:rgba(8,14,24,.88)}
+.viewer{background:var(--paper);color:var(--ink);border-radius:8px;border:6px solid #4a3220;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.viewer img{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain;background:#fff}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 14px,#e0b000 14px 28px);border-top:3px solid var(--ink)}
+.bar button{font:inherit;font-size:1.15rem;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;padding:6px 14px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.bar button:disabled{opacity:.4;cursor:default;box-shadow:none}
+.bar .title{font-family:"Saira Stencil One",sans-serif;font-size:1.2rem;background:var(--paper);border:2px solid var(--ink);padding:2px 10px;border-radius:4px}
+
+@media (max-width:560px){
+  .wall{padding:14px}
+  .grid{grid-template-columns:repeat(3,1fr);gap:12px}
+  .door .num{font-size:2.3rem}
   .door .hint{font-size:.85rem}
+  .door .front{background-size:auto}
+  .board .inner{padding:12px 14px 14px}
+  .bar{flex-wrap:wrap;justify-content:center}
+  .bar .title{order:-1;width:100%;text-align:center}
   .bar button{padding:6px 10px;font-size:1rem}
 }
+@media (prefers-reduced-motion:reduce){.lights li,.door.today .front{animation:none}}
 </style>
 </head>
 <body>
 <canvas class="snow" id="snow"></canvas>
+<div class="lights" aria-hidden="true"><ul id="lights"></ul></div>
 <header>
-  <h1>Adventure Team <span>★</span></h1>
-  <p class="sub">Der Comic-Adventskalender: jeden Tag ein neues Türchen</p>
-  <p class="status" id="status"></p>
+  <div class="sign">
+    <div class="board">
+      <div class="tape"></div>
+      <div class="inner">
+        <div class="school">Berufsschule Gunzenhausen · Bauseminar</div>
+        <h1>Adventure Team <span class="star">★</span></h1>
+        <p class="claim">Der Comic-Adventskalender 2026</p>
+        <dl class="facts">
+          <dt>BAUVORHABEN</dt><dd>Ein Weihnachtsbaum für alle drei Gewerke</dd>
+          <dt>BAUHERR</dt><dd>Das Bauseminar der Berufsschule Gunzenhausen</dd>
+          <dt>BAUZEIT</dt><dd>1. bis 24. Dezember, jeden Tag ein Türchen</dd>
+        </dl>
+      </div>
+      <div class="tape"></div>
+    </div>
+    <div class="posts" aria-hidden="true"><span></span><span></span></div>
+  </div>
 </header>
-<main><div class="grid" id="grid"></div></main>
-<footer>Türchen öffnen sich jeweils um Mitternacht (deutsche Zeit). Frohe Adventszeit!</footer>
+<section class="progress" aria-live="polite">
+  <div class="label"><span>Baufortschritt</span><b id="count">0 von 24</b></div>
+  <div class="ruler"><div class="fill" id="fill"></div></div>
+  <p class="status" id="status"></p>
+</section>
+<main class="wall"><div class="grid" id="grid"></div></main>
+<div class="ground" aria-hidden="true"></div>
+<footer>
+  Die Türchen öffnen sich jeweils um Mitternacht. Frohe Adventszeit!<br>
+  <strong>Ein Projekt des Bauseminars der Berufsschule Gunzenhausen</strong>
+  <div class="trades">MAURER · ZIMMERER · SCHREINER</div>
+</footer>
 
 <dialog id="dlg">
   <div class="viewer">
@@ -162,6 +269,10 @@ dialog::backdrop{background:rgba(5,15,10,.85)}
     } else {
       statusEl.textContent = "Alle 24 Türchen sind offen. Frohe Weihnachten!";
     }
+    var cnt = 0; for (var i=1;i<=24;i++) if (released[i]) cnt++;
+    document.getElementById("count").textContent = cnt + " von 24";
+    var fill = document.getElementById("fill");
+    fill.style.width = (cnt/24*100) + "%"; fill.style.setProperty("--n", Math.max(cnt,1));
     ORDER.forEach(function(n){
       var b = doors[n];
       if (!b){
@@ -227,6 +338,10 @@ dialog::backdrop{background:rgba(5,15,10,.85)}
   // Regelmäßig (und beim Zurückkehren in den Tab) neu prüfen, ob ein Türchen dazugekommen ist
   setInterval(refresh, 60000);
   document.addEventListener("visibilitychange", function(){ if (!document.hidden) refresh(); });
+
+  // Lichterkette
+  var lu = document.getElementById("lights"), nl = Math.max(8, Math.min(40, Math.round(innerWidth/38)));
+  for (var li=0; li<nl; li++) lu.appendChild(document.createElement("li"));
 
   // Schneefall
   var c = document.getElementById("snow"), ctx = c.getContext("2d"), flakes = [];
