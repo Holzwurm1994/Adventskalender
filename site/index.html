@@ -253,6 +253,23 @@ header{padding-top:84px}
   .w-walk{top:-72px;width:52px;height:62px}
   @keyframes walk{0%{left:2%;transform:scaleX(1)}47%{left:calc(98% - 52px);transform:scaleX(1)}50%{left:calc(98% - 52px);transform:scaleX(-1)}97%{left:2%;transform:scaleX(-1)}100%{left:2%;transform:scaleX(1)}}
 }
+
+/* Mini-Spiel */
+.gamehint{margin:6px 0 0;text-align:center;color:var(--muted);font-size:1.05rem}
+.gamehint b{color:var(--gold);font-weight:normal}
+.w-walk{pointer-events:auto;cursor:crosshair;touch-action:manipulation;-webkit-tap-highlight-color:transparent;z-index:5}
+.w-walk.hit,.w-walk.back{animation-play-state:paused}
+.w-walk.hit svg{animation:fall 2.6s cubic-bezier(.3,0,.7,1) forwards}
+.w-walk.back svg{animation:climb .9s ease-out}
+@keyframes fall{0%{transform:translate(0,0) rotate(0)}12%{transform:translate(-10px,-26px) rotate(-40deg)}55%{transform:translate(-26px,150px) rotate(-320deg);opacity:1}70%,100%{transform:translate(-30px,170px) rotate(-360deg);opacity:0}}
+@keyframes climb{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
+.w-walk::after{content:attr(data-say);position:absolute;left:50%;top:-30px;transform:translateX(-50%) scaleX(var(--flip,1));white-space:nowrap;
+  background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px;padding:1px 10px;font-size:1.05rem;opacity:0;pointer-events:none}
+.w-walk.hit::after{animation:sayit 1.6s ease-out}
+@keyframes sayit{0%{opacity:0;transform:translateX(-50%) scaleX(var(--flip,1)) translateY(6px)}15%,75%{opacity:1;transform:translateX(-50%) scaleX(var(--flip,1))}100%{opacity:0;transform:translateX(-50%) scaleX(var(--flip,1))}}
+.hitpop{position:fixed;z-index:20;pointer-events:none;transform:translate(-50%,-50%);font-family:"Saira Stencil One",sans-serif;font-size:1.6rem;color:var(--hazard);
+  text-shadow:2px 2px 0 var(--ink),-1px -1px 0 var(--ink);animation:popup 1.3s ease-out forwards}
+@keyframes popup{from{opacity:1;transform:translate(-50%,-50%) scale(.6)}25%{transform:translate(-50%,-90%) scale(1.15)}to{opacity:0;transform:translate(-50%,-160%) scale(1)}}
 @media (prefers-reduced-motion:reduce){.wichtel,.wichtel *,.w-walk svg{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.lights li,.door.today .front{animation:none}}
 </style>
@@ -328,6 +345,7 @@ header{padding-top:84px}
   <div class="ruler"><div class="fill" id="fill"></div></div>
   <p class="status" id="status"></p>
   <p class="fighthint">Bis zum 1. Dezember ist Schneeballschlacht! Klick oder tipp irgendwo hin und wirf mit.</p>
+  <p class="gamehint">❄ Mini-Spiel: Tipp auf den Wichtel auf der Mauer und wirf ihn mit einem Schneeball runter! · Treffer: <b id="hits">0</b></p>
 </section>
 <main class="wall">
   <div class="wichtel w-walk" aria-hidden="true"><svg viewBox="0 0 80 100"><use href="#wichtel" x="10" width="60" height="100"/><use href="#brett" x="-12" y="62" width="104" height="14"/></svg></div>
@@ -524,9 +542,11 @@ header{padding-top:84px}
   var fightReduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function fsize(){ var d = Math.min(window.devicePixelRatio||1, 2); fc.width = innerWidth*d; fc.height = innerHeight*d; fx.setTransform(d,0,0,d,0,0); }
   function rnd(a,b){ return a + Math.random()*(b-a); }
-  function throwBall(x0,y0,tx,ty,toScreen){
-    var T = toScreen ? rnd(.55,.8) : rnd(.7,1.25);
-    balls.push({x:x0,y:y0,vx:(tx-x0)/T,vy:(ty-y0)/T - .5*G*T*(toScreen?.35:1),t:0,T:T,r:toScreen?rnd(5,8):rnd(6,11),screen:toScreen,g:toScreen?G*.35:G,rot:rnd(0,6)});
+  function throwBall(x0,y0,tx,ty,toScreen,away){
+    var T = away ? .55 : toScreen ? rnd(.55,.8) : rnd(.7,1.25);
+    var gg = (toScreen||away) ? G*.35 : G;
+    balls.push({x:x0,y:y0,vx:(tx-x0)/T,vy:(ty-y0)/T - .5*gg*T,t:0,T:T,r:away?9:toScreen?rnd(5,8):rnd(6,11),screen:toScreen&&!away,away:!!away,g:gg});
+    startLoop();
   }
   function randomThrow(){
     var W = innerWidth, H = innerHeight, left = Math.random() < .5;
@@ -550,9 +570,11 @@ header{padding-top:84px}
     return g;
   }
   function fightTick(t){
-    if (!fightOn){ fx.clearRect(0,0,innerWidth,innerHeight); return; }
+    if (!fightOn && !balls.length && !parts.length && !splats.length){
+      fx.clearRect(0,0,innerWidth,innerHeight); loopOn = false; fc.style.display = "none"; return;
+    }
     var dt = Math.min(.05, (t - (lastT||t))/1000); lastT = t;
-    if (t > nextBall){ randomThrow(); if (Math.random()<.35) randomThrow(); nextBall = t + rnd(180,650); }
+    if (fightOn && t > nextBall){ randomThrow(); if (Math.random()<.35) randomThrow(); nextBall = t + rnd(180,650); }
     fx.clearRect(0,0,innerWidth,innerHeight);
     // Abdrücke
     splats = splats.filter(function(s){ s.age += dt; return s.age < s.life; });
@@ -568,8 +590,8 @@ header{padding-top:84px}
     // Bälle
     balls = balls.filter(function(b){
       b.t += dt; b.x += b.vx*dt; b.vy += b.g*dt; b.y += b.vy*dt;
-      if (b.t >= b.T){ splat(b.x,b.y,b.screen); return false; }
-      var r = b.screen ? b.r * (1 + 5*(b.t/b.T)*(b.t/b.T)) : b.r;
+      if (b.t >= b.T){ splat(b.x,b.y,b.screen); if (b.away) checkHit(b.x,b.y); return false; }
+      var k = b.t/b.T, r = b.screen ? b.r * (1 + 5*k*k) : b.away ? b.r * (2.6 - 1.8*k) : b.r;
       fx.fillStyle = "rgba(255,255,255,.25)";
       fx.beginPath(); fx.arc(b.x - b.vx*.02, b.y - b.vy*.02, r*.85, 0, 6.283); fx.fill();
       fx.fillStyle = ballFill(b.x,b.y,r);
@@ -589,14 +611,49 @@ header{padding-top:84px}
     if (fightReduce) on = false;
     document.body.classList.toggle("prestart", on);
     if (on === fightOn) return;
-    fightOn = on; fc.style.display = on ? "block" : "none";
-    if (on){ fsize(); lastT = 0; requestAnimationFrame(fightTick); }
+    fightOn = on;
+    if (on) startLoop();
   }
-  addEventListener("resize", function(){ if (fightOn) fsize(); });
+  var loopOn = false;
+  function startLoop(){
+    if (loopOn) return;
+    loopOn = true; fc.style.display = "block"; fsize(); lastT = 0; requestAnimationFrame(fightTick);
+  }
+  addEventListener("resize", function(){ if (loopOn) fsize(); });
+  function userThrow(x,y){ throwBall(rnd(innerWidth*.3, innerWidth*.7), innerHeight + 20, x, y, false, true); }
   document.addEventListener("pointerdown", function(e){
     if (!fightOn || (dlg && dlg.open)) return;
-    throwBall(rnd(innerWidth*.3, innerWidth*.7), innerHeight + 20, e.clientX, e.clientY, true);
+    userThrow(e.clientX, e.clientY);
   });
+
+  // Mini-Spiel: Wichtel auf der Mauer abwerfen (funktioniert die ganze Adventszeit)
+  var walker = document.querySelector(".w-walk"), hitsEl = document.getElementById("hits");
+  var HKEY = "adventWichtelTreffer", hits = 0, down = false;
+  try { hits = +localStorage.getItem(HKEY) || 0; } catch(e){}
+  function showHits(){ hitsEl.textContent = hits; }
+  showHits();
+  walker.addEventListener("pointerdown", function(e){
+    e.preventDefault(); e.stopPropagation();
+    if (dlg && dlg.open) return;
+    userThrow(e.clientX, e.clientY);
+  });
+  function checkHit(x,y){
+    if (down) return;
+    var r = walker.getBoundingClientRect(), m = 14;
+    if (x < r.left-m || x > r.right+m || y < r.top-m || y > r.bottom+m) return;
+    down = true; hits++; showHits();
+    try { localStorage.setItem(HKEY, hits); } catch(e){}
+    var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!"];
+    walker.setAttribute("data-say", say[Math.floor(Math.random()*say.length)]);
+    var tm = getComputedStyle(walker).transform, flip = (tm && tm.indexOf("matrix(-") === 0) ? -1 : 1;
+    walker.style.setProperty("--flip", flip);
+    walker.classList.remove("back"); walker.classList.add("hit");
+    var pop = document.createElement("div"); pop.className = "hitpop"; pop.textContent = "Treffer! " + hits;
+    pop.style.left = x + "px"; pop.style.top = y + "px"; document.body.appendChild(pop);
+    setTimeout(function(){ pop.remove(); }, 1300);
+    setTimeout(function(){ walker.classList.remove("hit"); walker.classList.add("back"); }, 2600);
+    setTimeout(function(){ walker.classList.remove("back"); down = false; }, 3500);
+  }
 
   // Lichterkette
   var lu = document.getElementById("lights"), nl = Math.max(8, Math.min(40, Math.round(innerWidth/38)));
