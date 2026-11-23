@@ -1,0 +1,49 @@
+name: Kalender veröffentlichen
+
+# Die Seite wird bei jeder Änderung und mehrmals rund um Mitternacht (deutsche Zeit) neu gebaut.
+# Jeder Lauf entschlüsselt nur die Comics, deren Tag schon erreicht ist.
+# GitHub startet geplante Läufe oft mit Verspätung oder lässt einzelne aus,
+# deshalb gibt es mehrere Termine pro Nacht. Ein Lauf mehr schadet nie.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  schedule:
+    # Zeiten in UTC. Im Dezember ist 00:00 Uhr in Deutschland = 23:00 UTC des Vortags.
+    - cron: "2,20,40 23 30 11 *"     # Nacht auf den 1.12.
+    - cron: "2,20,40 23 1-23 12 *"   # Nächte auf den 2.–24.12.
+    - cron: "10 0,1,3,5 1-24 12 *"   # Nachzügler, falls die Läufe oben ausfallen
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  bauen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Freigegebene Comics entschlüsseln
+        env:
+          COMIC_KEY: ${{ secrets.COMIC_KEY }}
+        run: node scripts/build.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  veroeffentlichen:
+    needs: bauen
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

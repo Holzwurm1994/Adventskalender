@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventure Team Adventskalender</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14301f; --bg2:#1d4630; --paper:#fbf7ee; --ink:#1b1b1b;
+  --door:#b8322a; --door2:#962620; --gold:#e8b84a; --muted:#cfe3d4;
+  --locked:#3a5a46;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+html{background:var(--bg)}
+body{
+  background:radial-gradient(ellipse at top,var(--bg2),var(--bg) 70%) fixed;
+  color:var(--paper); font-family:"Patrick Hand","Comic Sans MS",system-ui,sans-serif;
+  min-height:100vh; overflow-x:hidden;
+}
+.snow{position:fixed;inset:0;pointer-events:none;z-index:0}
+header{position:relative;z-index:1;text-align:center;padding:28px 16px 8px}
+h1{margin:0;font-size:clamp(2rem,6vw,3.4rem);letter-spacing:.02em;color:var(--paper)}
+h1 span{color:var(--gold)}
+.sub{margin:6px 0 0;font-size:1.25rem;color:var(--muted)}
+.status{margin:10px auto 0;font-size:1.1rem;color:var(--gold);min-height:1.4em}
+main{position:relative;z-index:1;max-width:1000px;margin:0 auto;padding:16px 16px 48px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:14px}
+.door{
+  position:relative;aspect-ratio:1/1;border:none;padding:0;cursor:pointer;
+  background:transparent;perspective:700px;font:inherit;
+}
+.door .back{
+  position:absolute;inset:0;border-radius:10px;background:var(--paper);
+  background-size:cover;background-position:center;border:3px solid var(--ink);
+}
+.door .front{
+  position:absolute;inset:0;border-radius:10px;border:3px solid var(--ink);
+  background:linear-gradient(145deg,var(--door),var(--door2));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transform-origin:left center;transition:transform .7s cubic-bezier(.3,.7,.3,1);
+  box-shadow:inset 0 0 0 6px rgba(255,255,255,.08);color:var(--paper);
+}
+.door .num{font-size:3rem;line-height:1;text-shadow:2px 2px 0 rgba(0,0,0,.35)}
+.door .hint{font-size:1rem;opacity:.9;margin-top:4px}
+.door.locked{cursor:not-allowed}
+.door.locked .front{background:linear-gradient(145deg,var(--locked),#2a4535);color:#a9c4b2}
+.door.today .front{box-shadow:0 0 0 4px var(--gold),0 0 24px var(--gold)}
+.door.opened .front{transform:rotateY(-100deg);opacity:0;pointer-events:none;transition:transform .7s cubic-bezier(.3,.7,.3,1),opacity .25s .55s}
+.door:focus-visible{outline:3px solid var(--gold);outline-offset:4px;border-radius:12px}
+.door.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+footer{position:relative;z-index:1;text-align:center;color:var(--muted);padding:0 16px 32px;font-size:1rem}
+
+dialog{
+  border:none;padding:0;background:transparent;max-width:min(1100px,96vw);width:100%;
+}
+dialog::backdrop{background:rgba(5,15,10,.85)}
+.viewer{background:var(--paper);color:var(--ink);border-radius:12px;border:4px solid var(--ink);overflow:hidden}
+.viewer img{display:block;width:100%;height:auto;max-height:80vh;object-fit:contain;background:#fff}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;border-top:3px solid var(--ink)}
+.bar button{
+  font:inherit;font-size:1.15rem;border:2px solid var(--ink);background:#fff;color:var(--ink);
+  border-radius:8px;padding:6px 14px;cursor:pointer;
+}
+.bar button:disabled{opacity:.35;cursor:default}
+.bar .title{font-size:1.3rem}
+@media (max-width:520px){
+  .grid{grid-template-columns:repeat(3,1fr);gap:10px}
+  .door .num{font-size:2.2rem}
+  .door .hint{font-size:.85rem}
+  .bar button{padding:6px 10px;font-size:1rem}
+}
+</style>
+</head>
+<body>
+<canvas class="snow" id="snow"></canvas>
+<header>
+  <h1>Adventure Team <span>★</span></h1>
+  <p class="sub">Der Comic-Adventskalender: jeden Tag ein neues Türchen</p>
+  <p class="status" id="status"></p>
+</header>
+<main><div class="grid" id="grid"></div></main>
+<footer>Türchen öffnen sich jeweils um Mitternacht (deutsche Zeit). Frohe Adventszeit!</footer>
+
+<dialog id="dlg">
+  <div class="viewer">
+    <img id="img" alt="">
+    <div class="bar">
+      <button id="prev" type="button">‹ Zurück</button>
+      <span class="title" id="ttl"></span>
+      <button id="next" type="button">Weiter ›</button>
+      <button id="close" type="button" aria-label="Schließen">✕</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(function(){
+  var YEAR = 2026, MONTH = 12;           // Dezember 2026
+  var TZ = "Europe/Berlin";
+  // Feste, gemischte Reihenfolge der Türchen im Raster
+  var ORDER = [7,15,1,22,11,4,18,9,24,13,2,20,6,17,10,3,23,14,8,19,5,12,21,16];
+  var KEY = "adventureTeamKalender2026";
+
+  function berlinToday(){
+    var parts = new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"})
+      .formatToParts(new Date());
+    var o = {}; parts.forEach(function(p){ o[p.type]=p.value; });
+    return {y:+o.year, m:+o.month, d:+o.day};
+  }
+  // Nach Datum wäre dieses Türchen dran (0 = noch keins)
+  function dueUpTo(){
+    var t = berlinToday();
+    var key = t.y*10000 + t.m*100 + t.d;
+    var start = YEAR*10000 + MONTH*100 + 1;
+    if (key < start) return 0;
+    if (key >= YEAR*10000 + MONTH*100 + 24) return 24;
+    return t.d;
+  }
+  // Wirklich freigegeben ist nur, was der Server veröffentlicht hat (released.json)
+  var released = {};
+  function isOpen(n){ return !!released[n]; }
+  function unlockedUpTo(){ var m = 0; for (var n=1;n<=24;n++) if (released[n]) m = n; return m; }
+  function loadReleased(){
+    return fetch("released.json?t=" + Date.now(), {cache:"no-store"})
+      .then(function(r){ return r.ok ? r.json() : {days:[]}; })
+      .then(function(j){ released = {}; (j.days||[]).forEach(function(n){ released[n]=1; }); })
+      .catch(function(){});
+  }
+  function daysUntilStart(){
+    var t = berlinToday();
+    var a = Date.UTC(t.y,t.m-1,t.d), b = Date.UTC(YEAR,MONTH-1,1);
+    return Math.round((b-a)/864e5);
+  }
+  function src(n){ return "comics/tag" + (n<10?"0":"") + n + ".webp"; }
+
+  var opened = {};
+  try { opened = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch(e){}
+  function saveOpened(){ try { localStorage.setItem(KEY, JSON.stringify(opened)); } catch(e){} }
+
+  var grid = document.getElementById("grid");
+  var statusEl = document.getElementById("status");
+  var dlg = document.getElementById("dlg"), img = document.getElementById("img"),
+      ttl = document.getElementById("ttl"), prevB = document.getElementById("prev"),
+      nextB = document.getElementById("next");
+  var current = 0, max = 0, doors = {};
+
+  function render(){
+    max = unlockedUpTo();
+    var due = dueUpTo();
+    if (due > max){
+      statusEl.textContent = "Türchen " + due + " wird gerade geöffnet. Schau in ein paar Minuten nochmal vorbei!";
+    } else if (max === 0){
+      var d = daysUntilStart();
+      statusEl.textContent = d === 1 ? "Morgen geht’s los! Das erste Türchen öffnet sich am 1. Dezember."
+        : "Noch " + d + " Tage bis zum ersten Türchen (1. Dezember).";
+    } else if (max < 24){
+      statusEl.textContent = "Heute ist Türchen " + max + " dran.";
+    } else {
+      statusEl.textContent = "Alle 24 Türchen sind offen. Frohe Weihnachten!";
+    }
+    ORDER.forEach(function(n){
+      var b = doors[n];
+      if (!b){
+        b = document.createElement("button");
+        b.type = "button"; b.className = "door";
+        b.innerHTML = '<div class="back"></div><div class="front"><span class="num">'+n+'</span><span class="hint"></span></div>';
+        b.addEventListener("click", function(){ clickDoor(n, b); });
+        grid.appendChild(b); doors[n] = b;
+      }
+      var unlocked = isOpen(n);
+      var pending = !unlocked && n <= due;
+      b.classList.toggle("locked", !unlocked);
+      b.classList.toggle("today", unlocked && n === max && max < 24 && !opened[n]);
+      b.classList.toggle("opened", unlocked && !!opened[n]);
+      b.querySelector(".hint").textContent = unlocked ? (opened[n] ? "" : "Öffnen!") : (pending ? "gleich da" : "🔒");
+      b.setAttribute("aria-label", "Türchen " + n + (unlocked ? "" : " (noch verschlossen)"));
+      var back = b.querySelector(".back");
+      back.style.backgroundImage = (unlocked && opened[n]) ? 'url("'+src(n)+'")' : "";
+    });
+  }
+
+  function clickDoor(n, b){
+    if (!isOpen(n)){
+      render();
+      if (n <= dueUpTo()){ statusEl.textContent = "Türchen " + n + " wird gerade geöffnet. Schau in ein paar Minuten nochmal vorbei!"; b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake"); loadReleased().then(render); return; }
+      b.classList.remove("shake"); void b.offsetWidth; b.classList.add("shake");
+      statusEl.textContent = "Türchen " + n + " ist noch zu. Geduld bis zum " + n + ". Dezember!";
+      return;
+    }
+    if (!opened[n]){
+      opened[n] = 1; saveOpened();
+      b.querySelector(".back").style.backgroundImage = 'url("'+src(n)+'")';
+      b.classList.add("opened"); b.classList.remove("today");
+      b.querySelector(".hint").textContent = "";
+      setTimeout(function(){ show(n); }, 650);
+    } else show(n);
+  }
+
+  function show(n){
+    max = unlockedUpTo();
+    if (!isOpen(n)) return;
+    current = n;
+    img.src = src(n);
+    img.alt = "Adventure Team Comic, " + n + ". Dezember";
+    ttl.textContent = n + ". Dezember";
+    prevB.disabled = !isOpen(n-1);
+    nextB.disabled = !isOpen(n+1);
+    if (!opened[n]){ opened[n]=1; saveOpened(); render(); }
+    if (!dlg.open) dlg.showModal();
+  }
+  prevB.onclick = function(){ show(current-1); };
+  nextB.onclick = function(){ show(current+1); };
+  document.getElementById("close").onclick = function(){ dlg.close(); };
+  dlg.addEventListener("click", function(e){ if (e.target === dlg) dlg.close(); });
+  document.addEventListener("keydown", function(e){
+    if (!dlg.open) return;
+    if (e.key === "ArrowLeft" && !prevB.disabled) show(current-1);
+    if (e.key === "ArrowRight" && !nextB.disabled) show(current+1);
+  });
+
+  function refresh(){ return loadReleased().then(render); }
+  render(); refresh();
+  // Regelmäßig (und beim Zurückkehren in den Tab) neu prüfen, ob ein Türchen dazugekommen ist
+  setInterval(refresh, 60000);
+  document.addEventListener("visibilitychange", function(){ if (!document.hidden) refresh(); });
+
+  // Schneefall
+  var c = document.getElementById("snow"), ctx = c.getContext("2d"), flakes = [];
+  var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function size(){ c.width = innerWidth; c.height = innerHeight; }
+  size(); addEventListener("resize", size);
+  for (var i=0;i<70;i++) flakes.push({x:Math.random()*innerWidth,y:Math.random()*innerHeight,r:1+Math.random()*2.5,s:.3+Math.random()*.9,w:Math.random()*6});
+  function tick(){
+    ctx.clearRect(0,0,c.width,c.height); ctx.fillStyle="rgba(255,255,255,.8)";
+    flakes.forEach(function(f){
+      f.y += f.s; f.w += .01; f.x += Math.sin(f.w)*.4;
+      if (f.y > c.height+5){ f.y=-5; f.x=Math.random()*c.width; }
+      ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,6.283); ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  if (!reduce) tick();
+})();
+</script>
+</body>
+</html>
