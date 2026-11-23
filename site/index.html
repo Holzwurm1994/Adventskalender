@@ -207,6 +207,7 @@ dialog{max-height:96vh;overflow:auto}
 /* Erinnerung */
 .remind{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:center;align-items:center;margin:12px 0 0}
 .remind a.btn{font:inherit;font-size:1.1rem;text-decoration:none;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:8px;padding:5px 14px;box-shadow:2px 2px 0 var(--ink)}
+.remind a.btn.mine{background:var(--hazard)}
 .remind a.btn:active{transform:translate(2px,2px);box-shadow:none}
 .remind .alt{color:var(--muted);font-size:1rem}
 .remind .alt a{color:var(--gold)}
@@ -385,8 +386,10 @@ header{padding-top:84px}
   <div class="ruler"><div class="fill" id="fill"></div></div>
   <p class="status" id="status"></p>
   <p class="fighthint">Bis zum 1. Dezember ist Schneeballschlacht! Klick oder tipp irgendwo hin und wirf mit.</p>
-  <p class="remind"><a class="btn" id="remindBtn" href="erinnerung.ics">📅 Jeden Morgen erinnern</a>
-    <span class="alt">Kalender-Abo: jeden Tag um 7 Uhr „Türchen ist offen“ · <a href="erinnerung.ics" download>als Datei</a></span></p>
+  <p class="remind"><span class="alt">Jeden Morgen um 7 Uhr erinnern lassen:</span>
+    <a class="btn" id="remindBtn" href="erinnerung.ics">📅 iPhone &amp; PC</a>
+    <a class="btn" id="androidBtn" href="erinnerung.ics">🤖 Android</a>
+    <span class="alt" id="androidAlt"><a id="gcalLink" href="#">oder als Google-Kalender-Abo</a></span></p>
   <p class="gamehint">❄ Mini-Spiel: Tipp auf den Wichtel auf der Mauer und wirf ihn mit einem Schneeball runter! · Treffer: <b id="hits">0</b></p>
 </section>
 <main class="wall">
@@ -863,10 +866,14 @@ header{padding-top:84px}
     var ua = navigator.userAgent, apple = /iPhone|iPad|Macintosh/.test(ua);
     var btn = document.getElementById("remindBtn");
     var webcal = base.replace(/^https?:/, "webcal:") + "erinnerung.ics";
+    if (/Android/.test(ua)) document.getElementById("androidBtn").classList.add("mine");
+    else document.getElementById("remindBtn").classList.add("mine");
     if (location.protocol !== "https:") return;
     if (apple) btn.href = webcal;                       // iPhone/iPad/Mac: Kalender-Abo
-    else if (/Android/.test(ua)) btn.href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(webcal); // Android: Google Kalender
     else btn.href = webcal;                             // PC: Outlook/Kalender-App
+    // Android: Datei-Import (Termine mit Weckern landen direkt im Kalender, z. B. Samsung-Kalender)
+    document.getElementById("androidBtn").href = base + "erinnerung.ics";
+    document.getElementById("gcalLink").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(webcal);
   })();
 
   // Lichterkette
