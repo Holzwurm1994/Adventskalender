@@ -42,7 +42,32 @@ for (let n = 1; n <= upTo; n++) {
   const img = await decryptBytes(key, await readFile(f));
   await writeFile(`_site/comics/tag${String(n).padStart(2, "0")}.webp`, img);
   days.push(n);
+  // Quiz des Tages (ebenfalls erst ab diesem Tag lesbar)
+  const q = `comics-enc/quiz${String(n).padStart(2, "0")}.enc`;
+  if (existsSync(q)) {
+    await mkdir("_site/quiz", { recursive: true });
+    await writeFile(`_site/quiz/quiz${String(n).padStart(2, "0")}.json`, await decryptBytes(key, await readFile(q)));
+  }
 }
+
+// Kalender-Abo mit einer Erinnerung pro Tag (7:00 Uhr deutsche Zeit = 06:00 UTC im Dezember)
+const PAGE = "https://holzwurm1994.github.io/Adventskalender/";
+const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Bauseminar Berufsschule Gunzenhausen//Adventskalender//DE",
+  "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "X-WR-CALNAME:Adventure Team Adventskalender", "X-WR-TIMEZONE:Europe/Berlin",
+  "REFRESH-INTERVAL;VALUE=DURATION:P1D", "X-PUBLISHED-TTL:P1D"];
+for (let n = 1; n <= 24; n++) {
+  const d = `2026${MONTH}${String(n).padStart(2, "0")}`;
+  ics.push("BEGIN:VEVENT", `UID:adventure-team-tuerchen-${n}-2026@bauseminar-gunzenhausen`, "DTSTAMP:20261123T000000Z",
+    `DTSTART:${d}T060000Z`, `DTEND:${d}T061500Z`, `SUMMARY:🎄 Türchen ${n} ist offen!`,
+    `DESCRIPTION:Der neue Comic vom Adventure Team wartet: ${PAGE}`, `URL:${PAGE}`, "TRANSP:TRANSPARENT",
+    "BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:Türchen ${n} ist offen!`, "TRIGGER:PT0M", "END:VALARM", "END:VEVENT");
+}
+ics.push("END:VCALENDAR");
+// Zeilen nach RFC 5545 auf 75 Byte falten
+const fold = l => { const b = Buffer.from(l); if (b.length <= 75) return l; const out = []; let cur = "";
+  for (const ch of l) { if (Buffer.byteLength(cur + ch) > (out.length ? 74 : 75)) { out.push(cur); cur = ""; } cur += ch; }
+  out.push(cur); return out.join("\r\n "); };
+await writeFile("_site/erinnerung.ics", ics.map(fold).join("\r\n") + "\r\n");
 await writeFile("_site/released.json", JSON.stringify({ days, builtAt: new Date().toISOString() }));
 await writeFile("_site/.nojekyll", "");
 console.log(`Freigegeben: ${days.length} Türchen (${days.join(", ") || "keins"})`);

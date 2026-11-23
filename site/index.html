@@ -196,12 +196,35 @@ footer .trades{font-family:"Saira Stencil One",sans-serif;letter-spacing:.08em;f
 dialog{border:none;padding:0;background:transparent;max-width:min(1100px,96vw);width:100%}
 dialog::backdrop{background:rgba(8,14,24,.88)}
 .viewer{background:var(--paper);color:var(--ink);border-radius:8px;border:6px solid #4a3220;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.6)}
-.viewer img{display:block;width:100%;height:auto;max-height:78vh;object-fit:contain;background:#fff}
+.viewer img{display:block;width:100%;height:auto;max-height:62vh;object-fit:contain;background:#fff}
+dialog{max-height:96vh;overflow:auto}
 .bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 12px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 14px,#e0b000 14px 28px);border-top:3px solid var(--ink)}
 .bar button{font:inherit;font-size:1.15rem;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:6px;padding:6px 14px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
 .bar button:disabled{opacity:.4;cursor:default;box-shadow:none}
 .bar .title{font-family:"Saira Stencil One",sans-serif;font-size:1.2rem;background:var(--paper);border:2px solid var(--ink);padding:2px 10px;border-radius:4px}
 
+
+/* Erinnerung */
+.remind{display:flex;flex-wrap:wrap;gap:8px 12px;justify-content:center;align-items:center;margin:12px 0 0}
+.remind a.btn{font:inherit;font-size:1.1rem;text-decoration:none;background:var(--paper);color:var(--ink);border:2px solid var(--ink);border-radius:8px;padding:5px 14px;box-shadow:2px 2px 0 var(--ink)}
+.remind a.btn:active{transform:translate(2px,2px);box-shadow:none}
+.remind .alt{color:var(--muted);font-size:1rem}
+.remind .alt a{color:var(--gold)}
+
+/* Quiz */
+.quiz{background:var(--paper);color:var(--ink);padding:12px 16px 14px;border-top:3px dashed #bba98c}
+.quiz h3{margin:0 0 4px;font-family:"Saira Stencil One",sans-serif;font-weight:normal;font-size:1rem;letter-spacing:.05em;color:#7a5a2f}
+.quiz .q{font-size:1.25rem;margin:0 0 8px}
+.quiz .opts{display:flex;flex-wrap:wrap;gap:8px}
+.quiz button{font:inherit;font-size:1.1rem;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);text-align:left}
+.quiz button:disabled{cursor:default}
+.quiz button.right{background:#c9f0d4;border-color:#1e6b3a}
+.quiz button.wrong{background:#ffd1cc;border-color:#9b2a20;text-decoration:line-through}
+.quiz .fb{margin:8px 0 0;font-size:1.1rem;min-height:0}
+.quiz .fb b{font-weight:normal;color:#1e6b3a}
+.quiz .fb b.no{color:#9b2a20}
+.quiz .score{font-size:.95rem;color:#666;margin-top:4px}
+.story .score-line{text-align:center;color:var(--gold);font-size:1.15rem;margin:-8px 0 14px}
 
 /* Lesebereich */
 .story{position:relative;z-index:2;max-width:1040px;margin:28px auto 0;padding:0 16px}
@@ -362,6 +385,8 @@ header{padding-top:84px}
   <div class="ruler"><div class="fill" id="fill"></div></div>
   <p class="status" id="status"></p>
   <p class="fighthint">Bis zum 1. Dezember ist Schneeballschlacht! Klick oder tipp irgendwo hin und wirf mit.</p>
+  <p class="remind"><a class="btn" id="remindBtn" href="erinnerung.ics">📅 Jeden Morgen erinnern</a>
+    <span class="alt">Kalender-Abo: jeden Tag um 7 Uhr „Türchen ist offen“ · <a href="erinnerung.ics" download>als Datei</a></span></p>
   <p class="gamehint">❄ Mini-Spiel: Tipp auf den Wichtel auf der Mauer und wirf ihn mit einem Schneeball runter! · Treffer: <b id="hits">0</b></p>
 </section>
 <main class="wall">
@@ -374,6 +399,7 @@ header{padding-top:84px}
   <div class="karre-row" aria-hidden="true"><svg style="--hat:#2f7d4f;--vest:#ff7a1a;--beard:#e6e6e6" class="wichtel w-karre" viewBox="0 0 150 100"><use href="#wichtel" x="0" width="60" height="100"/><use href="#schubkarre" x="46" y="50" width="100" height="52"/></svg></div>
   <h2 id="storyTitle">Die Geschichte bisher</h2>
   <p class="intro">Alle Türchen, die du schon geöffnet hast, zum Durchlesen der Reihe nach.</p>
+  <p class="score-line" id="scoreLine"></p>
   <div class="list" id="story"></div>
 </section>
 <footer>
@@ -391,6 +417,7 @@ header{padding-top:84px}
       <button id="next" type="button">Weiter ›</button>
       <button id="close" type="button" aria-label="Schließen">✕</button>
     </div>
+    <div class="quiz" id="dlgQuiz" hidden></div>
   </div>
 </dialog>
 
@@ -505,7 +532,9 @@ header{padding-top:84px}
       im.loading = "lazy"; im.src = src(n); im.alt = "Adventure Team Comic, " + n + ". Dezember";
       im.addEventListener("click", function(){ show(n); });
       var c = document.createElement("figcaption"); c.textContent = n + ". Dezember";
-      f.appendChild(im); f.appendChild(c); storyEl.appendChild(f);
+      var qz = document.createElement("div"); qz.className = "quiz"; qz.setAttribute("data-day", n); qz.hidden = true;
+      f.appendChild(im); f.appendChild(c); f.appendChild(qz); storyEl.appendChild(f);
+      renderQuiz(n, qz);
     });
   }
 
@@ -536,6 +565,7 @@ header{padding-top:84px}
     prevB.disabled = !isOpen(n-1);
     nextB.disabled = !isOpen(n+1);
     if (!opened[n]){ opened[n]=1; saveOpened(); render(); }
+    var dq = document.getElementById("dlgQuiz"); dq.setAttribute("data-day", n); renderQuiz(n, dq);
     if (!dlg.open) dlg.showModal();
   }
   prevB.onclick = function(){ show(current-1); };
@@ -776,6 +806,68 @@ header{padding-top:84px}
     }, 2600);
     setTimeout(function(){ walker.classList.remove("back"); }, 3500);
   }
+
+  // Tagesquiz: Fragen liegen erst ab ihrem Tag auf dem Server (quiz/quizNN.json)
+  var QKEY = "adventQuiz2026", answers = {}, quizCache = {};
+  try { answers = JSON.parse(localStorage.getItem(QKEY) || "{}") || {}; } catch(e){}
+  function loadQuiz(n){
+    if (!quizCache[n]) quizCache[n] = fetch("quiz/quiz" + (n<10?"0":"") + n + ".json", {cache:"no-cache"})
+      .then(function(r){ if (!r.ok) throw 0; return r.json(); }).catch(function(){ delete quizCache[n]; return null; });
+    return quizCache[n];
+  }
+  function order(n, len){ var a = []; for (var i=0;i<len;i++) a.push(i); var s = n*7 + 3;
+    for (var j=len-1;j>0;j--){ s = (s*9301 + 49297) % 233280; var k = Math.floor(s/233280*(j+1)); var t = a[j]; a[j] = a[k]; a[k] = t; } return a; }
+  function updateScore(){
+    var total = 0, right = 0; for (var k in answers){ total++; if (answers[k].ok) right++; }
+    var el = document.getElementById("scoreLine");
+    el.textContent = total ? "Quiz: " + right + " von " + total + " Fragen richtig" + (right === total ? " 🏆" : "") : "";
+  }
+  function renderQuiz(n, el){
+    loadQuiz(n).then(function(q){
+      if (!q || el.getAttribute("data-day") != String(n)) { if (!q) el.hidden = true; return; }
+      el.hidden = false; el.innerHTML = "";
+      var h = document.createElement("h3"); h.textContent = "QUIZ ZUM " + n + ". DEZEMBER";
+      var p = document.createElement("p"); p.className = "q"; p.textContent = q.q;
+      var box = document.createElement("div"); box.className = "opts";
+      var fb = document.createElement("p"); fb.className = "fb";
+      el.appendChild(h); el.appendChild(p); el.appendChild(box); el.appendChild(fb);
+      var btns = [];
+      order(n, q.options.length).forEach(function(i){
+        var b = document.createElement("button"); b.type = "button"; b.textContent = q.options[i]; b.setAttribute("data-i", i);
+        b.addEventListener("click", function(){
+          if (answers[n]) return;
+          answers[n] = {c: i, ok: i === q.correct};
+          try { localStorage.setItem(QKEY, JSON.stringify(answers)); } catch(e){}
+          show(); updateScore();
+          document.querySelectorAll('.quiz[data-day="' + n + '"]').forEach(function(o){ if (o !== el) renderQuiz(n, o); });
+        });
+        box.appendChild(b); btns.push(b);
+      });
+      function show(){
+        var a = answers[n]; if (!a) return;
+        btns.forEach(function(b){ var i = +b.getAttribute("data-i"); b.disabled = true;
+          if (i === q.correct) b.classList.add("right"); else if (i === a.c) b.classList.add("wrong"); });
+        fb.innerHTML = "";
+        var t = document.createElement("b"); if (!a.ok) t.className = "no";
+        t.textContent = a.ok ? "Richtig! " : "Leider nicht. ";
+        fb.appendChild(t); fb.appendChild(document.createTextNode(q.explain));
+      }
+      show();
+    });
+  }
+  updateScore();
+
+  // Erinnerung: Kalender-Abo (webcal) für iPhone/Mac, sonst Datei
+  (function(){
+    var base = location.href.replace(/[#?].*$/, "").replace(/[^\/]*$/, "");
+    var ua = navigator.userAgent, apple = /iPhone|iPad|Macintosh/.test(ua);
+    var btn = document.getElementById("remindBtn");
+    var webcal = base.replace(/^https?:/, "webcal:") + "erinnerung.ics";
+    if (location.protocol !== "https:") return;
+    if (apple) btn.href = webcal;                       // iPhone/iPad/Mac: Kalender-Abo
+    else if (/Android/.test(ua)) btn.href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(webcal); // Android: Google Kalender
+    else btn.href = webcal;                             // PC: Outlook/Kalender-App
+  })();
 
   // Lichterkette
   var lu = document.getElementById("lights"), nl = Math.max(8, Math.min(40, Math.round(innerWidth/38)));
