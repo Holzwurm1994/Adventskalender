@@ -143,6 +143,17 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
 .bar button:disabled{opacity:.4;cursor:default;box-shadow:none}
 .bar .title{font-family:"Saira Stencil One",sans-serif;font-size:1.2rem;background:var(--paper);border:2px solid var(--ink);padding:2px 10px;border-radius:4px}
 
+
+/* Lesebereich */
+.story{position:relative;z-index:2;max-width:1040px;margin:28px auto 0;padding:0 16px}
+.story h2{font-family:"Saira Stencil One",sans-serif;font-weight:normal;letter-spacing:.05em;color:var(--gold);font-size:1.5rem;margin:0 0 4px;text-align:center}
+.story .intro{text-align:center;color:var(--muted);margin:0 0 16px;font-size:1.1rem}
+.story .list{display:flex;flex-direction:column;gap:22px;max-width:900px;margin:0 auto}
+.story figure{margin:0;background:var(--paper);border:5px solid #4a3220;border-radius:6px;overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.story img{display:block;width:100%;height:auto;aspect-ratio:1503/1046;background:#fff;cursor:zoom-in}
+.story figcaption{font-family:"Saira Stencil One",sans-serif;color:var(--ink);padding:6px 12px;background:repeating-linear-gradient(-45deg,var(--hazard) 0 14px,#e0b000 14px 28px);border-top:3px solid var(--ink)}
+.story .empty{text-align:center;color:var(--muted);font-size:1.1rem}
+
 @media (max-width:560px){
   .wall{padding:14px}
   .grid{grid-template-columns:repeat(3,1fr);gap:12px}
@@ -186,6 +197,11 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
 </section>
 <main class="wall"><div class="grid" id="grid"></div></main>
 <div class="ground" aria-hidden="true"></div>
+<section class="story" aria-labelledby="storyTitle">
+  <h2 id="storyTitle">Die Geschichte bisher</h2>
+  <p class="intro">Alle Türchen, die du schon geöffnet hast, zum Durchlesen der Reihe nach.</p>
+  <div class="list" id="story"></div>
+</section>
 <footer>
   Die Türchen öffnen sich jeweils um Mitternacht. Frohe Adventszeit!<br>
   <strong>Ein Projekt des Bauseminars der Berufsschule Gunzenhausen</strong>
@@ -208,8 +224,8 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
 (function(){
   var YEAR = 2026, MONTH = 12;           // Dezember 2026
   var TZ = "Europe/Berlin";
-  // Feste, gemischte Reihenfolge der Türchen im Raster
-  var ORDER = [7,15,1,22,11,4,18,9,24,13,2,20,6,17,10,3,23,14,8,19,5,12,21,16];
+  // Türchen der Reihe nach, damit sich der Comic gut lesen lässt
+  var ORDER = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
   var KEY = "adventureTeamKalender2026";
 
   function berlinToday(){
@@ -273,6 +289,7 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
     document.getElementById("count").textContent = cnt + " von 24";
     var fill = document.getElementById("fill");
     fill.style.width = (cnt/24*100) + "%"; fill.style.setProperty("--n", Math.max(cnt,1));
+    renderStory();
     ORDER.forEach(function(n){
       var b = doors[n];
       if (!b){
@@ -294,6 +311,25 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
     });
   }
 
+  var storyEl = document.getElementById("story"), storyKey = "";
+  function renderStory(){
+    var list = []; for (var n=1;n<=24;n++) if (released[n] && opened[n]) list.push(n);
+    var k = list.join(","); if (k === storyKey) return; storyKey = k;
+    storyEl.innerHTML = "";
+    if (!list.length){
+      storyEl.innerHTML = '<p class="empty">Hier erscheint der Comic, sobald du dein erstes Türchen geöffnet hast.</p>';
+      return;
+    }
+    list.forEach(function(n){
+      var f = document.createElement("figure");
+      var im = document.createElement("img");
+      im.loading = "lazy"; im.src = src(n); im.alt = "Adventure Team Comic, " + n + ". Dezember";
+      im.addEventListener("click", function(){ show(n); });
+      var c = document.createElement("figcaption"); c.textContent = n + ". Dezember";
+      f.appendChild(im); f.appendChild(c); storyEl.appendChild(f);
+    });
+  }
+
   function clickDoor(n, b){
     if (!isOpen(n)){
       render();
@@ -303,7 +339,7 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
       return;
     }
     if (!opened[n]){
-      opened[n] = 1; saveOpened();
+      opened[n] = 1; saveOpened(); renderStory();
       b.querySelector(".back").style.backgroundImage = 'url("'+src(n)+'")';
       b.classList.add("opened"); b.classList.remove("today");
       b.querySelector(".hint").textContent = "";
