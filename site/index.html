@@ -650,7 +650,7 @@ header{padding-top:84px}
     {name:"Knut",  hat:"#c8312a", vest:"#ff7a1a", beard:"#ffffff", prop:"brett"},
     {name:"Sven",  hat:"#2f7d4f", vest:"#f4d13d", beard:"#ffffff", prop:"hammer"},
     {name:"Lasse", hat:"#3c6591", vest:"#ff7a1a", beard:"#f3e3c3", prop:"wasserwaage"},
-    {name:"Björn", hat:"#8e1f1a", vest:"#b5e61d", beard:"#d9d9d9", prop:"brett"},
+    {name:"Björn", hat:"#8e1f1a", vest:"#b5e61d", beard:"#d9d9d9", prop:"brett", say:"Nicht mit Steinen!"},
     {name:"Oskar", hat:"#6c3fa0", vest:"#ff7a1a", beard:"#ffffff", prop:"hammer"},
     {name:"Ole",   hat:"#d9822b", vest:"#f4d13d", beard:"#c9b8a0", prop:"wasserwaage"}
   ];
@@ -747,7 +747,7 @@ header{padding-top:84px}
     hits++; showHits();
     try { localStorage.setItem(HKEY, hits); } catch(e){}
     var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!","Jetzt aber schnell!"];
-    walker.setAttribute("data-say", CREW[crewIdx].name + ": " + say[Math.floor(Math.random()*say.length)]);
+    walker.setAttribute("data-say", CREW[crewIdx].name + ": " + (CREW[crewIdx].say || say[Math.floor(Math.random()*say.length)]));
     var fromLadder = W.state === "up" || W.state === "top" || W.state === "down";
     setState("fallen");
     walker.classList.remove("back", "jump"); walker.classList.add("hit");
