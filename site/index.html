@@ -2,7 +2,15 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1a2b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Adventskalender">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Adventure Team Adventskalender</title>
 <meta name="description" content="Der Comic-Adventskalender des Bauseminars der Berufsschule Gunzenhausen: jeden Tag ab dem 1. Dezember ein neues Türchen.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +37,7 @@ body{
 body.prestart .fighthint{display:block}
 
 /* Lichterkette */
-.lights{position:relative;z-index:2;height:46px;overflow:hidden}
+.lights{position:relative;z-index:2;height:calc(46px + env(safe-area-inset-top));padding-top:env(safe-area-inset-top);overflow:hidden}
 .lights::before{content:"";position:absolute;left:-5%;right:-5%;top:-30px;height:50px;border-bottom:2px solid #2a2a2a;border-radius:0 0 50% 50%/0 0 100% 100%}
 .lights ul{list-style:none;margin:0;padding:0 8px;display:flex;justify-content:space-between;position:relative;top:8px}
 .lights li{width:12px;height:18px;border-radius:50% 50% 45% 45%;position:relative;animation:glow 2.4s infinite ease-in-out}
@@ -219,15 +227,85 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
   .bar .title{order:-1;width:100%;text-align:center}
   .bar button{padding:6px 10px;font-size:1rem}
 }
+
+/* Wichtel im Baustellenstil */
+.wichtel{position:absolute;pointer-events:none;z-index:4;overflow:visible}
+header{padding-top:84px}
+.w-sign-l{left:30px;top:-94px;width:76px;height:96px}
+.w-sign-r{right:30px;top:-96px;width:78px;height:98px}
+.w-sign-r .swing{transform-origin:57px 82px;animation:hammer 1.1s ease-in-out infinite}
+@keyframes hammer{0%,100%{transform:rotate(0)}40%{transform:rotate(-38deg)}55%{transform:rotate(8deg)}}
+.w-sign-l .tilt{transform-origin:40px 84px;animation:tilt 3.5s ease-in-out infinite}
+@keyframes tilt{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.wall{margin-top:104px}
+.w-walk{top:-104px;left:2%;width:80px;height:96px;animation:walk 46s linear infinite}
+.w-walk svg{width:100%;height:100%;overflow:visible;animation:bob .5s ease-in-out infinite alternate}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
+@keyframes walk{0%{left:2%;transform:scaleX(1)}47%{left:calc(98% - 80px);transform:scaleX(1)}50%{left:calc(98% - 80px);transform:scaleX(-1)}97%{left:2%;transform:scaleX(-1)}100%{left:2%;transform:scaleX(1)}}
+.karre-row{display:flex;justify-content:center;margin-bottom:4px}
+.w-karre{position:static;width:150px;height:100px;animation:roll 4s ease-in-out infinite alternate}
+@keyframes roll{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
+@media (max-width:560px){
+  header{padding-top:56px}
+  .w-sign-l{left:12px;top:-62px;width:50px;height:63px}
+  .w-sign-r{right:12px;top:-64px;width:52px;height:65px}
+  .wall{margin-top:74px}
+  .w-walk{top:-72px;width:52px;height:62px}
+  @keyframes walk{0%{left:2%;transform:scaleX(1)}47%{left:calc(98% - 52px);transform:scaleX(1)}50%{left:calc(98% - 52px);transform:scaleX(-1)}97%{left:2%;transform:scaleX(-1)}100%{left:2%;transform:scaleX(1)}}
+}
+@media (prefers-reduced-motion:reduce){.wichtel,.wichtel *,.w-walk svg{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.lights li,.door.today .front{animation:none}}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+ <defs>
+  <symbol id="wichtel" viewBox="0 0 60 100">
+   <g stroke="#1b1b1b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <!-- Arme -->
+    <ellipse cx="13" cy="76" rx="5" ry="9" fill="#ff7a1a" transform="rotate(20 13 76)"/>
+    <ellipse cx="47" cy="76" rx="5" ry="9" fill="#ff7a1a" transform="rotate(-20 47 76)"/>
+    <circle cx="10" cy="85" r="3.5" fill="#f2b48c"/>
+    <circle cx="50" cy="85" r="3.5" fill="#f2b48c"/>
+    <!-- Beine und Stiefel -->
+    <rect x="20" y="88" width="8" height="7" fill="#4a4f57"/>
+    <rect x="32" y="88" width="8" height="7" fill="#4a4f57"/>
+    <ellipse cx="23" cy="96" rx="7" ry="3.5" fill="#2b2b2b"/>
+    <ellipse cx="37" cy="96" rx="7" ry="3.5" fill="#2b2b2b"/>
+    <!-- Warnweste -->
+    <path d="M17 66 L43 66 L47 90 L13 90 Z" fill="#ff7a1a"/>
+    <path d="M14.5 82 L45.5 82" stroke="#e8eef2" stroke-width="3.5"/>
+    <path d="M14.5 82 L45.5 82" stroke="#9aa6b0" stroke-width=".8"/>
+    <!-- Bart -->
+    <path d="M12 54 Q9 74 30 84 Q51 74 48 54 Q40 61 30 61 Q20 61 12 54 Z" fill="#fff"/>
+    <path d="M22 66 Q24 74 30 78 M38 66 Q36 74 30 78" fill="none" stroke-width="1" opacity=".35"/>
+    <!-- Mütze -->
+    <path d="M31 2 C27 18 15 38 10 52 L50 52 C46 38 37 20 31 2 Z" fill="#c8312a"/>
+    <path d="M15.8 38 L44.3 38 L46.2 43 L13.9 43 Z" fill="#e8eef2" stroke-width="1.5"/>
+    <!-- Helmkrempe -->
+    <path d="M5 54 Q30 46 55 54 L55 57 Q30 51 5 57 Z" fill="#f4c20d"/>
+    <!-- Nase -->
+    <circle cx="30" cy="57" r="6.5" fill="#f2b48c"/>
+   </g>
+   <circle cx="27.5" cy="55" r="1.8" fill="#fff" opacity=".7"/>
+  </symbol>
+  <symbol id="hammer" viewBox="0 0 30 30"><g stroke="#1b1b1b" stroke-width="2" stroke-linejoin="round"><rect x="13" y="8" width="4" height="21" rx="1.5" fill="#b07a43"/><rect x="5" y="2" width="20" height="8" rx="1.5" fill="#9aa3ad"/></g></symbol>
+  <symbol id="brett" viewBox="0 0 90 14"><g stroke="#1b1b1b" stroke-width="2"><rect x="1" y="2" width="88" height="10" rx="1.5" fill="#d9a86c"/><path d="M15 5h18M45 9h22" stroke-width="1" opacity=".4"/></g></symbol>
+  <symbol id="schubkarre" viewBox="0 0 90 50"><g stroke="#1b1b1b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+    <rect x="30" y="2" width="24" height="18" fill="#e63946"/><path d="M42 2v18M30 11h24" stroke="#ffd34d" stroke-width="3"/><path d="M36 1 q6 -6 6 1 q0 -7 6 -1" fill="none" stroke="#ffd34d" stroke-width="2.5"/>
+    <path d="M18 18 L72 18 L64 34 L26 34 Z" fill="#2f7d4f"/>
+    <path d="M24 34 L10 44 M66 34 L66 46 M18 18 L2 14" fill="none" stroke-width="3"/>
+    <circle cx="70" cy="40" r="8" fill="#333"/><circle cx="70" cy="40" r="2.5" fill="#bbb"/></g></symbol>
+  <symbol id="wasserwaage" viewBox="0 0 80 14"><g stroke="#1b1b1b" stroke-width="2"><rect x="1" y="2" width="78" height="10" rx="2" fill="#f4c20d"/><rect x="33" y="4" width="14" height="6" rx="3" fill="#aef0c2"/><circle cx="40" cy="7" r="2" fill="#fff" stroke-width="1"/></g></symbol>
+ </defs>
+</svg>
 <canvas class="snow" id="snow"></canvas>
 <canvas class="fight" id="fight" aria-hidden="true"></canvas>
 <div class="lights" aria-hidden="true"><ul id="lights"></ul></div>
 <header>
   <div class="sign">
+    <svg class="wichtel w-sign-l" viewBox="0 0 80 100" aria-hidden="true"><g class="tilt"><use href="#wichtel" x="10" width="60" height="100"/><use href="#wasserwaage" x="0" y="74" width="80" height="14"/></g></svg>
+    <svg class="wichtel w-sign-r" viewBox="0 0 80 100" aria-hidden="true"><use href="#wichtel" width="60" height="100"/><g class="swing"><use href="#hammer" x="46" y="56" width="26" height="28"/></g></svg>
     <div class="board">
       <div class="tape"></div>
       <div class="inner">
@@ -251,9 +329,13 @@ dialog::backdrop{background:rgba(8,14,24,.88)}
   <p class="status" id="status"></p>
   <p class="fighthint">Bis zum 1. Dezember ist Schneeballschlacht! Klick oder tipp irgendwo hin und wirf mit.</p>
 </section>
-<main class="wall"><div class="grid" id="grid"></div></main>
+<main class="wall">
+  <div class="wichtel w-walk" aria-hidden="true"><svg viewBox="0 0 80 100"><use href="#wichtel" x="10" width="60" height="100"/><use href="#brett" x="-12" y="62" width="104" height="14"/></svg></div>
+  <div class="grid" id="grid"></div>
+</main>
 <div class="ground" aria-hidden="true"></div>
 <section class="story" aria-labelledby="storyTitle">
+  <div class="karre-row" aria-hidden="true"><svg class="wichtel w-karre" viewBox="0 0 150 100"><use href="#wichtel" x="0" width="60" height="100"/><use href="#schubkarre" x="46" y="50" width="100" height="52"/></svg></div>
   <h2 id="storyTitle">Die Geschichte bisher</h2>
   <p class="intro">Alle Türchen, die du schon geöffnet hast, zum Durchlesen der Reihe nach.</p>
   <div class="list" id="story"></div>
