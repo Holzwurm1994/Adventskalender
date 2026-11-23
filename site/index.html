@@ -239,7 +239,8 @@ header{padding-top:84px}
 @keyframes tilt{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
 .wall{margin-top:104px}
 .w-walk{top:-104px;left:20px;width:80px;height:96px}
-.w-walk svg{width:100%;height:100%;overflow:visible;animation:bob .5s ease-in-out infinite alternate}
+.w-walk .wbody{position:relative;width:100%;height:100%;animation:bob .5s ease-in-out infinite alternate}
+.w-walk svg{width:100%;height:100%;overflow:visible}
 @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
 .karre-row{display:flex;justify-content:center;margin-bottom:4px}
 .w-karre{position:static;width:150px;height:100px;animation:roll 4s ease-in-out infinite alternate}
@@ -256,9 +257,9 @@ header{padding-top:84px}
 .gamehint{margin:6px 0 0;text-align:center;color:var(--muted);font-size:1.05rem}
 .gamehint b{color:var(--gold);font-weight:normal}
 .w-walk{pointer-events:auto;cursor:crosshair;touch-action:manipulation;-webkit-tap-highlight-color:transparent;z-index:5}
-.w-walk.climbing svg{animation:climbwiggle .35s ease-in-out infinite alternate}
+.w-walk.climbing .wbody{animation:climbwiggle .35s ease-in-out infinite alternate}
 @keyframes climbwiggle{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
-.w-walk.jump svg{animation:hop .6s cubic-bezier(.2,.8,.4,1)}
+.w-walk.jump .wbody{animation:hop .6s cubic-bezier(.2,.8,.4,1)}
 @keyframes hop{0%,100%{transform:translateY(0)}45%{transform:translateY(-70px) rotate(-12deg)}}
 .ladder{position:absolute;z-index:3;width:44px;pointer-events:none;transform-origin:top center;transform:scaleY(0);transition:transform .8s cubic-bezier(.3,.8,.3,1);
   background:
@@ -266,11 +267,18 @@ header{padding-top:84px}
     repeating-linear-gradient(180deg,transparent 0 18px,#8d5e2f 18px 25px);
   filter:drop-shadow(2px 3px 0 rgba(0,0,0,.35))}
 .ladder.on{transform:scaleY(1)}
+.clump{position:absolute;width:38px;height:34px;margin:-17px 0 0 -19px;transform-origin:center;scale:1.3;pointer-events:none;opacity:0;
+  background:radial-gradient(circle at 50% 45%,#fff 0 9px,transparent 10px),radial-gradient(circle at 25% 35%,#fff 0 7px,transparent 8px),radial-gradient(circle at 75% 30%,#fff 0 7px,transparent 8px),
+    radial-gradient(circle at 30% 72%,#fff 0 6px,transparent 7px),radial-gradient(circle at 70% 70%,#f4f9ff 0 7px,transparent 8px),radial-gradient(circle at 50% 92%,#fff 0 3px,transparent 4px),
+    radial-gradient(circle at 12% 60%,#fff 0 3px,transparent 4px),radial-gradient(circle at 90% 55%,#fff 0 3.5px,transparent 4.5px);
+  filter:drop-shadow(0 1px 0 rgba(100,130,160,.7))}
+.w-walk.hit .clump{opacity:1;animation:clumpin .18s ease-out}
+@keyframes clumpin{from{transform:scale(.3)}to{transform:scale(1)}}
 .hitpop.miss{color:#bfe3fa}
 .hitpop.level{font-size:1.4rem;color:#fff;text-shadow:2px 2px 0 var(--red),-1px -1px 0 var(--ink);white-space:nowrap}
-.w-walk.hit svg{animation:fall 2.6s cubic-bezier(.3,0,.7,1) forwards}
-.w-walk.back svg{animation:climb .9s ease-out}
-@keyframes fall{0%{transform:translate(0,0) rotate(0)}12%{transform:translate(-10px,-26px) rotate(-40deg)}55%{transform:translate(-26px,150px) rotate(-320deg);opacity:1}70%,100%{transform:translate(-30px,170px) rotate(-360deg);opacity:0}}
+.w-walk.hit .wbody{animation:fall 2.8s cubic-bezier(.3,0,.7,1) forwards}
+.w-walk.back .wbody{animation:climb .9s ease-out}
+@keyframes fall{0%{transform:translate(0,0)}4%{transform:translate(-6px,2px) scale(1.05,.92)}10%{transform:translate(3px,0) rotate(6deg)}18%{transform:translate(-4px,0) rotate(-6deg)}28%{transform:translate(-10px,-26px) rotate(-40deg)}62%{transform:translate(-26px,150px) rotate(-320deg);opacity:1}75%,100%{transform:translate(-30px,170px) rotate(-360deg);opacity:0}}
 @keyframes climb{from{transform:translateY(60px);opacity:0}to{transform:translateY(0);opacity:1}}
 .w-walk::after{content:attr(data-say);position:absolute;left:50%;top:-30px;transform:translateX(-50%) scaleX(var(--flip,1));white-space:nowrap;
   background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px;padding:1px 10px;font-size:1.05rem;opacity:0;pointer-events:none}
@@ -279,7 +287,7 @@ header{padding-top:84px}
 .hitpop{position:fixed;z-index:20;pointer-events:none;transform:translate(-50%,-50%);font-family:"Saira Stencil One",sans-serif;font-size:1.6rem;color:var(--hazard);
   text-shadow:2px 2px 0 var(--ink),-1px -1px 0 var(--ink);animation:popup 1.3s ease-out forwards}
 @keyframes popup{from{opacity:1;transform:translate(-50%,-50%) scale(.6)}25%{transform:translate(-50%,-90%) scale(1.15)}to{opacity:0;transform:translate(-50%,-160%) scale(1)}}
-@media (prefers-reduced-motion:reduce){.wichtel,.wichtel *,.w-walk svg{animation:none!important}}
+@media (prefers-reduced-motion:reduce){.wichtel,.wichtel *,.w-walk .wbody{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.lights li,.door.today .front{animation:none}}
 </style>
 </head>
@@ -358,7 +366,7 @@ header{padding-top:84px}
 </section>
 <main class="wall">
   <div class="ladder" id="ladder" aria-hidden="true"></div>
-  <div class="wichtel w-walk" aria-hidden="true"><svg viewBox="0 0 80 100"><use href="#wichtel" x="10" width="60" height="100"/><use id="wprop" href="#brett" x="-12" y="62" width="104" height="14"/></svg></div>
+  <div class="wichtel w-walk" aria-hidden="true"><div class="wbody"><svg viewBox="0 0 80 100"><use href="#wichtel" x="10" width="60" height="100"/><use id="wprop" href="#brett" x="-12" y="62" width="104" height="14"/></svg><span class="clump" id="clump"></span></div></div>
   <div class="grid" id="grid"></div>
 </main>
 <div class="ground" aria-hidden="true"></div>
@@ -601,7 +609,7 @@ header{padding-top:84px}
     balls = balls.filter(function(b){
       b.t += dt; b.x += b.vx*dt; b.vy += b.g*dt; b.y += b.vy*dt;
       if (b.t >= b.T){ splat(b.x,b.y,b.screen); if (b.away) checkHit(b.x,b.y); return false; }
-      var k = b.t/b.T, r = b.screen ? b.r * (1 + 5*k*k) : b.away ? b.r * (2.6 - 1.8*k) : b.r;
+      var k = b.t/b.T, r = b.screen ? b.r * (1 + 5*k*k) : b.away ? b.r * (2.6 - 1.5*k) : b.r;
       fx.fillStyle = "rgba(255,255,255,.25)";
       fx.beginPath(); fx.arc(b.x - b.vx*.02, b.y - b.vy*.02, r*.85, 0, 6.283); fx.fill();
       fx.fillStyle = ballFill(b.x,b.y,r);
@@ -749,6 +757,13 @@ header{padding-top:84px}
     var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!","Jetzt aber schnell!"];
     walker.setAttribute("data-say", CREW[crewIdx].name + ": " + (CREW[crewIdx].say || say[Math.floor(Math.random()*say.length)]));
     var fromLadder = W.state === "up" || W.state === "top" || W.state === "down";
+    var lx = (W.dir < 0 && !fromLadder) ? r.right - x : x - r.left;
+    var clump = document.getElementById("clump");
+    clump.style.left = Math.max(10, Math.min(r.width - 10, lx)) + "px";
+    clump.style.top = Math.max(12, Math.min(r.height - 12, y - r.top)) + "px";
+    for (var i=0;i<26;i++){ var a = rnd(0,6.283), v = rnd(80,360);
+      parts.push({x:x,y:y,vx:Math.cos(a)*v,vy:Math.sin(a)*v - 140,r:rnd(1.5,4.5),life:rnd(.5,1),age:0}); }
+    startLoop();
     setState("fallen");
     walker.classList.remove("back", "jump"); walker.classList.add("hit");
     popText(x, y, "Treffer! " + hits);
