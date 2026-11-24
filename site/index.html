@@ -759,7 +759,7 @@ header{padding-top:84px}
   try { hits = +localStorage.getItem(HKEY) || 0; } catch(e){}
   function showHits(){ hitsEl.textContent = hits; }
   showHits();
-  var W = {x: 20, dir: 1, state: "walk", t: 0, base: -104, y: 0, dodge: 0, dash: 0, ladderH: 300, nextLadder: rnd(12,25), last: 0};
+  var W = {x: 20, dir: 1, state: "walk", t: 0, base: -104, y: 0, dodge: 0, dash: 0, ladderH: 300, nextLadder: rnd(3,6), last: 0};
   var CREW = [
     {name:"Knut",  hat:"#c8312a", vest:"#ff7a1a", beard:"#ffffff", prop:"brett"},
     {name:"Sven",  hat:"#2f7d4f", vest:"#f4d13d", beard:"#ffffff", prop:"hammer"},
@@ -805,7 +805,7 @@ header{padding-top:84px}
       if (W.x < 6){ W.x = 6; W.dir = 1; }
       W.nextLadder -= dt;
       if (W.nextLadder <= 0){
-        W.nextLadder = rnd(18, 35);
+        W.nextLadder = rnd(5, 10);
         ladder.style.left = (W.x + walker.offsetWidth/2 - 22) + "px";
         ladder.style.height = (W.ladderH + 40) + "px";
         ladder.style.top = (-(W.ladderH) - 10) + "px";
@@ -878,7 +878,7 @@ header{padding-top:84px}
       walker.classList.remove("hit"); walker.classList.add("back");
       setCrew((crewIdx + 1) % CREW.length);
       if (fromLadder){ ladder.classList.remove("on"); }
-      W.y = 0; setState("walk"); W.nextLadder = rnd(15, 30); place();
+      W.y = 0; setState("walk"); W.nextLadder = rnd(4, 8); place();
     }, 2600);
     setTimeout(function(){ walker.classList.remove("back"); }, 3500);
   }
