@@ -318,6 +318,49 @@ header{padding-top:84px}
 @keyframes popup{from{opacity:1;transform:translate(-50%,-50%) scale(.6)}25%{transform:translate(-50%,-90%) scale(1.15)}to{opacity:0;transform:translate(-50%,-160%) scale(1)}}
 @media (prefers-reduced-motion:reduce){.wichtel,.wichtel *,.w-walk .wbody{animation:none!important}}
 @media (prefers-reduced-motion:reduce){.lights li,.door.today .front{animation:none}}
+
+/* ===== Anpassung an jedes Gerät (Handy, Tablet, PC, großer Bildschirm) ===== */
+:root{--k:1}
+html{font-size:clamp(16px,.4vw + 11.5px,22px)}
+@media (max-width:560px){:root{--k:.65}}
+@media (min-width:1600px){:root{--k:1.3}}
+@media (min-width:2200px){:root{--k:1.6}}
+header{padding-top:calc(84px*var(--k))}
+.w-sign-l{left:calc(30px*var(--k));top:calc(-94px*var(--k));width:calc(76px*var(--k));height:calc(96px*var(--k))}
+.w-sign-r{right:calc(30px*var(--k));top:calc(-96px*var(--k));width:calc(78px*var(--k));height:calc(98px*var(--k))}
+.wall{margin-top:calc(104px*var(--k))}
+.w-walk{top:calc(-104px*var(--k));width:calc(80px*var(--k));height:calc(96px*var(--k))}
+.w-karre{width:calc(150px*var(--k));height:calc(100px*var(--k))}
+.ladder{width:calc(44px*var(--k))}
+.sign,.progress{max-width:clamp(720px,48vw,1100px)}
+.wall,.ground{max-width:clamp(1040px,74vw,1700px)}
+.story{max-width:clamp(1040px,74vw,1700px)}
+.story .list{max-width:clamp(900px,55vw,1300px)}
+dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
+/* Raster: Handy 3, Tablet hoch 4, sonst 6 Spalten (24 Türchen gehen immer auf) */
+.grid{grid-template-columns:repeat(6,1fr);gap:clamp(10px,1.4vw,30px)}
+@media (max-width:899px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media (max-width:560px){.grid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:899px) and (orientation:landscape){.grid{grid-template-columns:repeat(6,1fr)}}
+/* Schrift auf den Türchen wächst mit der Türgröße */
+.door{container-type:inline-size}
+@supports (font-size:1cqi){
+  .door .num,.d-wreath .num{font-size:30cqi}
+  .d-wreath .num{font-size:22cqi}
+  .door .hint{font-size:max(11px,9.5cqi)}
+  .door.locked .hint{font-size:max(12px,11cqi)}
+}
+/* Handy quer: Comic links, Quiz rechts */
+@media (orientation:landscape) and (max-height:600px){
+  dialog{max-width:98vw;max-height:96vh}
+  .viewer{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,32%);grid-template-rows:1fr auto}
+  .viewer img{grid-column:1;grid-row:1;max-height:calc(96vh - 70px)}
+  .viewer .bar{grid-column:1;grid-row:2}
+  .viewer .quiz{grid-column:2;grid-row:1 / span 2;border-top:none;border-left:3px dashed #bba98c;overflow:auto;max-height:calc(96vh - 12px)}
+  .lights{height:calc(30px + env(safe-area-inset-top))}
+}
+.facts{max-width:34em}
+@media (max-width:560px){.soundbtn .lbl{display:none}.soundbtn{padding:6px 10px;font-size:1.3rem}}
 </style>
 </head>
 <body>
@@ -782,7 +825,8 @@ header{padding-top:84px}
   function speed(){ return Math.min(150, 42 * (1 + .1*level())) * (W.dash > 0 ? 2.6 : 1); }
   function dodgeChance(){ return Math.min(.6, .05*level()); }
   function layoutW(){
-    W.base = innerWidth <= 560 ? -72 : -104;
+    var kk = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--k")) || 1;
+    W.base = -104 * kk;
     var wr = wall.getBoundingClientRect();
     W.ladderH = Math.max(110, Math.min(innerWidth <= 560 ? 170 : 220, wr.top + scrollY - 40) );
   }
@@ -951,7 +995,7 @@ header{padding-top:84px}
 
   // Ton-Knopf und Hämmern des Wichtels am Bauschild
   var sb = document.getElementById("soundBtn");
-  function soundLabel(){ var o = SFX.isOn(); sb.textContent = o ? "🔊 Ton an" : "🔇 Ton aus"; sb.classList.toggle("on", o); sb.setAttribute("aria-pressed", o); }
+  function soundLabel(){ var o = SFX.isOn(); sb.innerHTML = o ? '🔊<span class="lbl"> Ton an</span>' : '🔇<span class="lbl"> Ton aus</span>'; sb.setAttribute("aria-label", o ? "Ton an" : "Ton aus"); sb.classList.toggle("on", o); sb.setAttribute("aria-pressed", o); }
   soundLabel();
   sb.addEventListener("pointerdown", function(e){ e.stopPropagation(); });
   sb.addEventListener("click", function(){ SFX.toggle(); soundLabel(); });
