@@ -215,6 +215,7 @@ dialog{max-height:96vh;overflow:auto}
 /* Quiz */
 .quiz{background:var(--paper);color:var(--ink);padding:12px 16px 14px;border-top:3px dashed #bba98c}
 .quiz h3{margin:0 0 4px;font-family:"Saira Stencil One",sans-serif;font-weight:normal;font-size:1rem;letter-spacing:.05em;color:#7a5a2f}
+.quiz .tip{margin:0 0 6px;font-size:.95rem;color:#7a5a2f;background:#fff3c4;border:1.5px dashed #c9a23a;border-radius:8px;padding:3px 10px;display:inline-block}
 .quiz .q{font-size:1.25rem;margin:0 0 8px}
 .quiz .opts{display:flex;flex-wrap:wrap;gap:8px}
 .quiz button{font:inherit;font-size:1.1rem;border:2px solid var(--ink);background:#fff;color:var(--ink);border-radius:8px;padding:5px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink);text-align:left}
@@ -1040,10 +1041,12 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
       if (!q || el.getAttribute("data-day") != String(n)) { if (!q) el.hidden = true; return; }
       el.hidden = false; el.innerHTML = "";
       var h = document.createElement("h3"); h.textContent = "QUIZ ZUM " + n + ". DEZEMBER";
+      var tip = document.createElement("p"); tip.className = "tip";
+      tip.textContent = "💡 Tipp: Die Antwort steckt " + (n === unlockedUpTo() ? "im heutigen Comic." : "im Comic vom " + n + ". Dezember.");
       var p = document.createElement("p"); p.className = "q"; p.textContent = q.q;
       var box = document.createElement("div"); box.className = "opts";
       var fb = document.createElement("p"); fb.className = "fb";
-      el.appendChild(h); el.appendChild(p); el.appendChild(box); el.appendChild(fb);
+      el.appendChild(h); el.appendChild(tip); el.appendChild(p); el.appendChild(box); el.appendChild(fb);
       var btns = [];
       order(n, q.options.length).forEach(function(i){
         var b = document.createElement("button"); b.type = "button"; b.textContent = q.options[i]; b.setAttribute("data-i", i);
