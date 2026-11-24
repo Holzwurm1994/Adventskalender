@@ -273,6 +273,10 @@ header{padding-top:84px}
 @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}
 .karre-row{display:flex;justify-content:center;margin-bottom:4px}
 .w-karre{position:static;width:150px;height:100px;animation:roll 4s ease-in-out infinite alternate}
+#giftHit{pointer-events:all;cursor:default;-webkit-tap-highlight-color:transparent}
+.w-karre.halt{animation-play-state:paused}
+.w-karre.wackel{animation:wackel .25s ease-in-out 2}
+@keyframes wackel{25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
 @keyframes roll{from{transform:translateX(-30px)}to{transform:translateX(30px)}}
 @media (max-width:560px){
   header{padding-top:56px}
@@ -447,7 +451,7 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
 </main>
 <div class="ground" aria-hidden="true"></div>
 <section class="story" aria-labelledby="storyTitle">
-  <div class="karre-row" aria-hidden="true"><svg style="--hat:#2f7d4f;--vest:#ff7a1a;--beard:#e6e6e6" class="wichtel w-karre" viewBox="0 0 150 100"><use href="#wichtel" x="0" width="60" height="100"/><use href="#schubkarre" x="46" y="50" width="100" height="52"/></svg></div>
+  <div class="karre-row" aria-hidden="true"><svg style="--hat:#2f7d4f;--vest:#ff7a1a;--beard:#e6e6e6" class="wichtel w-karre" viewBox="0 0 150 100"><use href="#wichtel" x="0" width="60" height="100"/><use href="#schubkarre" x="46" y="50" width="100" height="52"/><rect id="giftHit" x="72" y="38" width="42" height="40" fill="transparent"/></svg></div>
   <h2 id="storyTitle">Die Geschichte bisher</h2>
   <p class="intro">Alle Türchen, die du schon geöffnet hast, zum Durchlesen der Reihe nach.</p>
   <p class="score-line" id="scoreLine"></p>
@@ -1026,6 +1030,20 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
     // Android: Datei-Import (Termine mit Weckern landen direkt im Kalender, z. B. Samsung-Kalender)
     document.getElementById("androidBtn").href = base + "erinnerung.ics";
     document.getElementById("gcalLink").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(webcal);
+  })();
+
+  // Versteckter Admin-Zugang: 3x schnell auf das Geschenk in der Schubkarre tippen
+  (function(){
+    var g = document.getElementById("giftHit"), k = document.querySelector(".w-karre"), n = 0, t0 = 0;
+    if (!g) return;
+    g.addEventListener("click", function(e){
+      e.stopPropagation(); var now = Date.now();
+      n = (now - t0 < 1500) ? n + 1 : 1; t0 = now;
+      // Schubkarre kurz anhalten, damit man das Geschenk gut trifft
+      k.classList.add("halt"); clearTimeout(g._h); g._h = setTimeout(function(){ k.classList.remove("halt"); n = 0; }, 1600);
+      if (n >= 3){ n = 0; k.classList.remove("wackel"); void k.offsetWidth; k.classList.add("wackel");
+        setTimeout(function(){ location.href = "admin.html"; }, 450); }
+    });
   })();
 
   // Ton-Knopf und Hämmern des Wichtels am Bauschild
