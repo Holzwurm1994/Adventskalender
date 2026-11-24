@@ -832,11 +832,20 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
   }
   layoutW(); addEventListener("resize", layoutW);
   function place(){
-    var flip = (W.state === "walk" || W.state === "wait") ? W.dir : 1;
+    var flip = (W.state === "walk" || W.state === "wait" || W.state === "goto" || W.state === "ruler") ? W.dir : 1;
     walker.style.left = W.x + "px";
     walker.style.top = (W.base + W.y) + "px";
     walker.style.transform = "scaleX(" + flip + ")";
     walker.style.setProperty("--flip", flip);
+  }
+  // Lage des Zollstocks (Baufortschritt) relativ zur Mauer
+  var rulerEl = document.querySelector(".ruler");
+  function rulerGeo(){
+    var wr = wall.getBoundingClientRect(), rr = rulerEl.getBoundingClientRect();
+    var ox = wr.left + wall.clientLeft, oy = wr.top + wall.clientTop;   // Bezug: Innenkante der Mauer (ohne Rand)
+    var l = Math.max(6, rr.left - ox + 4), r = Math.min(wall.clientWidth - 6, rr.right - ox - 4);
+    if (r - l < walker.offsetWidth + 10){ l = 6; r = wall.clientWidth - 6; }
+    return { top: rr.top - oy, l: l, r: r };
   }
   function setState(st){ W.state = st; W.t = 0; walker.classList.toggle("climbing", st === "up" || st === "down"); }
   function wTick(t){
@@ -849,22 +858,48 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
       if (W.x < 6){ W.x = 6; W.dir = 1; }
       W.nextLadder -= dt;
       if (W.nextLadder <= 0){
+        // Ziel: Leiter hoch zum Baufortschritt (Zollstock)
         W.nextLadder = rnd(5, 10);
-        ladder.style.left = (W.x + walker.offsetWidth/2 - 22) + "px";
-        ladder.style.height = (W.ladderH + 40) + "px";
-        ladder.style.top = (-(W.ladderH) - 10) + "px";
+        var rg = rulerGeo(), w = walker.offsetWidth;
+        W.lx = Math.max(rg.l, Math.min(rg.r - w, W.x));
+        W.dir = W.lx >= W.x ? 1 : -1;
+        setState("goto");
+      }
+    } else if (W.state === "goto"){
+      // zur Stelle unter dem Zollstock laufen
+      W.x += W.dir * speed() * dt;
+      if ((W.dir > 0 && W.x >= W.lx) || (W.dir < 0 && W.x <= W.lx)){
+        W.x = W.lx;
+        var g = rulerGeo(), lw = ladder.offsetWidth || 44;
+        W.topY = g.top - walker.offsetHeight - W.base + 2;   // Füße stehen auf dem Zollstock
+        ladder.style.left = (W.x + walker.offsetWidth/2 - lw/2) + "px";
+        ladder.style.top = (g.top + 4) + "px";
+        ladder.style.height = (-g.top + 2) + "px";
         ladder.classList.add("on"); setState("wait"); SFX.play("saw");
       }
     } else if (W.state === "wait"){
       if (W.t > .9) setState("up");
     } else if (W.state === "up"){
-      W.y -= (55 + 6*level()) * dt;
-      if (W.y <= -(W.ladderH - 30)){ W.y = -(W.ladderH - 30); setState("top"); }
-    } else if (W.state === "top"){
-      if (W.t > 1.4) setState("down");
+      W.y -= (60 + 6*level()) * dt;
+      if (W.y <= W.topY){
+        W.y = W.topY;
+        // oben: einmal den Zollstock entlang bis zum einen Ende, zum anderen Ende und zurück zur Leiter
+        var g2 = rulerGeo(), ww = walker.offsetWidth;
+        W.route = Math.random() < .5 ? [g2.r - ww, g2.l, W.lx] : [g2.l, g2.r - ww, W.lx];
+        W.dir = W.route[0] >= W.x ? 1 : -1;
+        setState("ruler");
+      }
+    } else if (W.state === "ruler"){
+      var tgt = W.route[0];
+      W.dir = tgt >= W.x ? 1 : -1;
+      W.x += W.dir * Math.max(140, speed() * 1.4) * dt;
+      if ((W.dir > 0 && W.x >= tgt) || (W.dir < 0 && W.x <= tgt)){
+        W.x = tgt; W.route.shift();
+        if (!W.route.length) setState("down");
+      }
     } else if (W.state === "down"){
-      W.y += (70 + 6*level()) * dt;
-      if (W.y >= 0){ W.y = 0; ladder.classList.remove("on"); setState("walk"); }
+      W.y += (75 + 6*level()) * dt;
+      if (W.y >= 0){ W.y = 0; ladder.classList.remove("on"); setState("walk"); W.dir = Math.random() < .5 ? 1 : -1; }
     }
     if (W.state !== "fallen") place();
     if (!fightReduce) requestAnimationFrame(wTick);
@@ -906,8 +941,8 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
     try { localStorage.setItem(HKEY, hits); } catch(e){}
     var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!","Jetzt aber schnell!"];
     walker.setAttribute("data-say", CREW[crewIdx].name + ": " + (CREW[crewIdx].say || say[Math.floor(Math.random()*say.length)]));
-    var fromLadder = W.state === "up" || W.state === "top" || W.state === "down";
-    var lx = (W.dir < 0 && !fromLadder) ? r.right - x : x - r.left;
+    var fromLadder = W.state === "up" || W.state === "ruler" || W.state === "down" || W.state === "wait";
+    var lx = (W.dir < 0 && (W.state === "walk" || W.state === "goto" || W.state === "ruler")) ? r.right - x : x - r.left;
     var clump = document.getElementById("clump");
     clump.style.left = Math.max(10, Math.min(r.width - 10, lx)) + "px";
     clump.style.top = Math.max(12, Math.min(r.height - 12, y - r.top)) + "px";
