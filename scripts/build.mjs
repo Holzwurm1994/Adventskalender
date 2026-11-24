@@ -26,6 +26,9 @@ export function releasedUpTo(date = new Date()) {
 const pass = process.env.COMIC_KEY;
 if (!pass) { console.error("Secret COMIC_KEY fehlt."); process.exit(1); }
 const key = await deriveKey(pass);
+// Passwort-Prüfung: passt COMIC_KEY nicht zu den verschlüsselten Dateien, lieber gar nicht veröffentlichen
+try { await decryptBytes(key, await readFile("comics-enc/tag01.enc")); }
+catch { console.error("Secret COMIC_KEY passt nicht zu comics-enc/ (Passwort geändert? Secret aktualisieren)."); process.exit(1); }
 const upTo = releasedUpTo();
 
 await rm("_site", { recursive: true, force: true });
