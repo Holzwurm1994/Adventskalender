@@ -317,6 +317,8 @@ header{padding-top:84px}
   background:#fff;color:var(--ink);border:2px solid var(--ink);border-radius:12px;padding:1px 10px;font-size:1.05rem;opacity:0;pointer-events:none}
 .w-walk.hit::after{animation:sayit 1.6s ease-out}
 @keyframes sayit{0%{opacity:0;transform:translateX(-50%) scaleX(var(--flip,1)) translateY(6px)}15%,75%{opacity:1;transform:translateX(-50%) scaleX(var(--flip,1))}100%{opacity:0;transform:translateX(-50%) scaleX(var(--flip,1))}}
+.flybrille{position:fixed;z-index:19;pointer-events:none;width:calc(64px*var(--k));height:calc(18px*var(--k));filter:drop-shadow(0 0 2px #fff);transform:translate(-50%,-50%)}
+.flybrille svg{width:100%;height:100%;overflow:visible}
 .hitpop{position:fixed;z-index:20;pointer-events:none;transform:translate(-50%,-50%);font-family:"Saira Stencil One",sans-serif;font-size:1.6rem;color:var(--hazard);
   text-shadow:2px 2px 0 var(--ink),-1px -1px 0 var(--ink);animation:popup 1.3s ease-out forwards}
 @keyframes popup{from{opacity:1;transform:translate(-50%,-50%) scale(.6)}25%{transform:translate(-50%,-90%) scale(1.15)}to{opacity:0;transform:translate(-50%,-160%) scale(1)}}
@@ -394,6 +396,8 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
     <path d="M15.8 38 L44.3 38 L46.2 43 L13.9 43 Z" fill="#e8eef2" stroke-width="1.5"/>
     <!-- Helmkrempe -->
     <path d="M5 54 Q30 46 55 54 L55 57 Q30 51 5 57 Z" style="fill:var(--brim,#f4c20d)"/>
+    <!-- Brille (nur beim Wichtel mit Brille) -->
+    <g style="display:var(--brille,none)"><g fill="rgba(190,230,255,.45)" stroke="#1b1b1b" stroke-width="1.6"><path d="M14.5 57 L9 54.5 M45.5 57 L51 54.5" fill="none"/><path d="M24.5 57.5 Q30 55 35.5 57.5" fill="none"/><circle cx="19.5" cy="58" r="5"/><circle cx="40.5" cy="58" r="5"/></g><path d="M16.5 56 l2 -1.5 M37.5 56 l2 -1.5" stroke="#fff" stroke-width="1.2"/></g>
     <!-- Nase -->
     <circle cx="30" cy="57" r="6.5" style="fill:var(--nose,#f2b48c)"/>
    </g>
@@ -524,6 +528,7 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
       hammer: function(at, vol){ at = at||0; vol = vol||1; noise(.05, {at:at, type:"bandpass", f:1800, q:2, vol:.5*vol}); tone(160, .09, {at:at, to:90, vol:.35*vol}); tone(2600, .05, {at:at, vol:.05*vol, type:"square"}); },
       saw: function(at){ at = at||0; for (var i=0;i<4;i++){ noise(.16, {at:at+i*.2, type:"bandpass", f:i%2?2600:1700, to:i%2?1700:2600, q:6, vol:.22}); } },
       creak: function(at){ tone(110, .45, {at:at||0, type:"sawtooth", to:180, filter:700, q:8, vol:.12}); },
+      klirr: function(){ tone(3200, .12, {type:"triangle", vol:.09}); tone(4300, .1, {at:.05, type:"triangle", vol:.07}); tone(2700, .15, {at:.11, type:"triangle", vol:.05}); },
       knock: function(){ tone(140, .08, {to:80, vol:.3}); noise(.04, {f:700, vol:.15}); tone(140, .08, {at:.13, to:80, vol:.25}); noise(.04, {at:.13, f:700, vol:.12}); },
       whoosh: function(){ noise(.3, {type:"bandpass", f:500, to:2200, q:1.5, vol:.18}); },
       splat: function(vol){ vol = vol||1; noise(.18, {f:2500, to:300, vol:.4*vol}); tone(90, .1, {to:50, vol:.2*vol}); },
@@ -810,7 +815,7 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
   var CREW = [
     {name:"Knut",  hat:"#c8312a", vest:"#ff7a1a", beard:"#ffffff", prop:"brett"},
     {name:"Sven",  hat:"#2f7d4f", vest:"#f4d13d", beard:"#ffffff", prop:"hammer"},
-    {name:"Lasse", hat:"#3c6591", vest:"#ff7a1a", beard:"#f3e3c3", prop:"wasserwaage"},
+    {name:"Lasse", hat:"#3c6591", vest:"#ff7a1a", beard:"#f3e3c3", prop:"wasserwaage", brille:true, say:"Oh, meine Brille!"},
     {name:"Björn", hat:"#8e1f1a", vest:"#b5e61d", beard:"#d9d9d9", prop:"brett", say:"Nicht mit Steinen!"},
     {name:"Oskar", hat:"#6c3fa0", vest:"#ff7a1a", beard:"#ffffff", prop:"hammer"},
     {name:"Ole",   hat:"#d9822b", vest:"#f4d13d", beard:"#c9b8a0", prop:"wasserwaage"}
@@ -823,6 +828,28 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
     var pr = PROPS[c.prop];
     wprop.setAttribute("href", "#" + c.prop); wprop.setAttribute("x", pr[0]); wprop.setAttribute("y", pr[1]);
     wprop.setAttribute("width", pr[2]); wprop.setAttribute("height", pr[3]);
+    walker.style.setProperty("--brille", c.brille ? "inline" : "none");
+  }
+  // Brille fliegt beim Treffer davon und landet unten im Schnee
+  function dropGlasses(r){
+    walker.style.setProperty("--brille", "none");
+    var g = document.createElement("div"); g.className = "flybrille";
+    g.innerHTML = '<svg viewBox="7 51 46 13"><g fill="rgba(190,230,255,.45)" stroke="#1b1b1b" stroke-width="1.6"><path d="M14.5 57 L9 54.5 M45.5 57 L51 54.5" fill="none"/><path d="M24.5 57.5 Q30 55 35.5 57.5" fill="none"/><circle cx="19.5" cy="58" r="5"/><circle cx="40.5" cy="58" r="5"/></g></svg>';
+    var x0 = r.left + r.width/2, y0 = r.top + r.height*.58, dx = rnd(-70, 70), dy = rnd(110, 170);
+    g.style.left = x0 + "px"; g.style.top = y0 + "px"; document.body.appendChild(g);
+    var rot = (dx < 0 ? -1 : 1) * rnd(400, 700);
+    if (g.animate){
+      g.animate([
+        {transform:"translate(-50%,-50%) translate(0,0) rotate(0deg)", offset:0},
+        {transform:"translate(-50%,-50%) translate("+dx*.45+"px,-55px) rotate("+rot*.45+"deg)", offset:.35, easing:"ease-in"},
+        {transform:"translate(-50%,-50%) translate("+dx+"px,"+dy+"px) rotate("+rot+"deg)", offset:.75},
+        {transform:"translate(-50%,-50%) translate("+dx+"px,"+(dy-6)+"px) rotate("+(rot+10)+"deg)", offset:.82},
+        {transform:"translate(-50%,-50%) translate("+dx+"px,"+dy+"px) rotate("+rot+"deg)", offset:.9, opacity:1},
+        {transform:"translate(-50%,-50%) translate("+dx+"px,"+dy+"px) rotate("+rot+"deg)", opacity:0}
+      ], {duration:3200, fill:"forwards"});
+    }
+    setTimeout(function(){ SFX.play("klirr"); }, 1000);
+    setTimeout(function(){ g.remove(); }, 3300);
   }
   setCrew(crewIdx);
   function level(){ return Math.min(hits, 25); }
@@ -945,6 +972,7 @@ dialog{max-width:min(clamp(1100px,70vw,1700px),96vw)}
     try { localStorage.setItem(HKEY, hits); } catch(e){}
     var say = ["Hey!","Autsch!","Uff!","Na warte!","Hilfe!","Nicht so fest!","Mein Brett!","Brrr!","Jetzt aber schnell!"];
     walker.setAttribute("data-say", CREW[crewIdx].name + ": " + (CREW[crewIdx].say || say[Math.floor(Math.random()*say.length)]));
+    if (CREW[crewIdx].brille) dropGlasses(r);
     var fromLadder = W.state === "up" || W.state === "ruler" || W.state === "down" || W.state === "wait";
     var lx = (W.dir < 0 && (W.state === "walk" || W.state === "goto" || W.state === "ruler")) ? r.right - x : x - r.left;
     var clump = document.getElementById("clump");
